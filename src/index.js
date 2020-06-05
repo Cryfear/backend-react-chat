@@ -40,15 +40,34 @@ app.post("/users/create", (req, res) => {
   })
 });
 
-// app.get("/", function (req, res) {
-//   const User = new UserSchema({
-//     email: 'vasilek@yandex.ru',
-//     fullName: 'test user'
-//   })
-//   User.save().then(() => {
-//     console.log('created user');
-//   })
-// });
+app.put("/users/:id", (req, res) => {
+  const updateUser = {
+    avatar: req.body.avatar,
+    fullName: req.body.fullName,
+    password: req.body.password
+  }
+
+  UserSchema.findOneAndUpdate({
+      _id: req.params.id
+    },
+    updateUser, {
+      new: true,
+      useFindAndModify: false
+    },
+    (err, user) => {
+      if (err) return console.log(err);
+      res.send(user);
+    });
+});
+
+app.delete("/users/:id", (req, res) => {
+  UserSchema.deleteOne({
+    _id: req.params.id
+  }, function (err, user) {
+    if (err) return console.log(err);
+    res.send(user);
+  });
+});
 
 mongoose.connect(
   database.url, {
