@@ -21,6 +21,9 @@ const UserSchema = new Schema({
     default: false
   },
   last_seen: Date,
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+  },
 }, {
   timestamps: true,
 });
