@@ -1,4 +1,4 @@
-const DialogSchema = require('../schemes/Dialog');
+const DialogSchema = require('../models/Dialog');
 
 let DialogsController = {
   findDialog: (req, res) => {
@@ -15,7 +15,7 @@ let DialogsController = {
       fullName: req.body.fullName,
       avatar: req.body.avatar || 'none'
     })
-    Dialog.save((err, dialog) => {
+    Dialog.save((err) => {
       if (err) return console.log(err);
       console.log('created dialog');
       res.send(Dialog);

@@ -1,10 +1,11 @@
-const UserSchema = require('../schemes/User');
+const UserSchema = require('../models/User.js');
 
 let UsersController = {
   findUser: (req, res) => {
     UserSchema.findOne({
       _id: req.params.id
     }, (err, user) => {
+      console.log(user);
       if (err) return console.log(err);
       res.send(user);
     });
@@ -17,7 +18,7 @@ let UsersController = {
       password: req.body.password,
       avatar: req.body.avatar || 'none'
     })
-    User.save((err, result) => {
+    User.save(() => {
       console.log('created user');
       res.send(User);
     })

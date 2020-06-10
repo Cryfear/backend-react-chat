@@ -10,7 +10,10 @@ const DialogSchema = new Schema({
   },
   date: Date,
   lastMessage: String,
-  unreadedCount: Number
+  unreadedCount: Number,
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+  },
 }, {
   timestamps: true,
 });

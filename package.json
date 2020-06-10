@@ -10,6 +10,8 @@
     "watch": "nodemon src/index.js"
   },
   "devDependencies": {
+    "eslint": "^7.2.0",
+    "eslint-plugin-node": "^11.1.0",
     "json-server": "^0.15.0"
   },
   "dependencies": {

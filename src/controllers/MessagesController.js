@@ -1,4 +1,4 @@
-const MessageSchema = require('../schemes/Message');
+const MessageSchema = require('../models/Message');
 
 let MessagesController = {
   findMessage: (req, res) => {
