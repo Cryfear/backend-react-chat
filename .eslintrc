@@ -8,7 +8,7 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["node", "ts"],
+  "plugins": ["node"],
   "rules": {
     "node/exports-style": ["error", "module.exports"],
     "no-console": 0

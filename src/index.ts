@@ -1,34 +1,26 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const database = require("./config/db");
-const UsersController = require('./controllers/UsersController');
-const MessagesController = require('./controllers/MessagesController');
-const DialogsController = require('./controllers/DialogsController');
-const updateLastSeen = require('./middleware/updateLastSeen');
-const cors = require('cors');
+import express from "express";
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
+import database from "./config/db";
+import UsersController from "./controllers/UsersController";
+import MessagesController from "./controllers/MessagesController";
+import DialogsController from "./controllers/DialogsController";
+import updateLastSeen from "./middleware/updateLastSeen";
+import cors from "cors";
 
 const app = express();
 
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
+app.use(
+  bodyParser.urlencoded({
+    extended: false,
+  })
+);
 
 const corsOptions = {
-  origin: 'http://127.0.0.1:3000',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
+  origin: ["http://127.0.0.1:3000", "http://localhost:3000"],
+  optionsSuccessStatus: 200,
+};
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true')
-  next();
-  app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Methods', 'GET, PATCH, PUT, POST, DELETE, OPTIONS');
-    res.send();
-  });
-})
 app.use(updateLastSeen);
 
 app.get("/users/:id", cors(corsOptions), UsersController.findUser);
@@ -47,7 +39,8 @@ app.put("/dialogs/:id", cors(corsOptions), DialogsController.updateDialog);
 app.delete("/dialogs/:id", cors(corsOptions), DialogsController.deleteDialog);
 
 mongoose.connect(
-  database.url, {
+  database.url,
+  {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
