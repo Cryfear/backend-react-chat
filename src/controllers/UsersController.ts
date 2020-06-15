@@ -17,6 +17,7 @@ let UsersController = {
   },
 
   createUser: (req: express.Request, res: express.Response) => {
+    console.log(req.body);
     bcrypt.hash(req.body.password, 4, (err: Error, hash: string) => {
       UserSchema.create({
         email: req.body.email,

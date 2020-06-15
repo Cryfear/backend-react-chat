@@ -5,11 +5,10 @@ import database from "./config/db";
 import UsersController from "./controllers/UsersController";
 import MessagesController from "./controllers/MessagesController";
 import DialogsController from "./controllers/DialogsController";
-import updateLastSeen from "./middleware/updateLastSeen";
 import cors from "cors";
 
 const app = express();
-
+app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
     extended: false,
@@ -19,24 +18,37 @@ app.use(
 const corsOptions = {
   origin: ["http://127.0.0.1:3000", "http://localhost:3000"],
   optionsSuccessStatus: 200,
+  options: "*",
+  "Access-Control-Allow-Credentials": true,
 };
 
-app.use(updateLastSeen);
+app.use((req: express.Request, res: express.Response, next: any) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+  app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Methods", "GET, PATCH, PUT, POST, DELETE, OPTIONS");
+    res.send();
+  });
+});
 
-app.get("/users/:id", cors(corsOptions), UsersController.findUser);
-app.post("/users/create", cors(corsOptions), UsersController.createUser);
-app.put("/users/:id", cors(corsOptions), UsersController.updateUser);
-app.delete("/users/:id", cors(corsOptions), UsersController.deleteUser);
+app.use(cors(corsOptions));
 
-app.get("/messages/:id", cors(corsOptions), MessagesController.findMessage);
-app.post("/messages/create", cors(corsOptions), MessagesController.createMessage);
-app.put("/messages/:id", cors(corsOptions), MessagesController.updateMessage);
-app.delete("/messages/:id", cors(corsOptions), MessagesController.deleteMessage);
+app.get("/users/:id", UsersController.findUser);
+app.post("/users/create", UsersController.createUser);
+app.put("/users/:id", UsersController.updateUser);
+app.delete("/users/:id", UsersController.deleteUser);
 
-app.get("/dialogs/:id", cors(corsOptions), DialogsController.findDialog);
-app.post("/dialogs/create", cors(corsOptions), DialogsController.createDialog);
-app.put("/dialogs/:id", cors(corsOptions), DialogsController.updateDialog);
-app.delete("/dialogs/:id", cors(corsOptions), DialogsController.deleteDialog);
+app.get("/messages/:id", MessagesController.findMessage);
+app.post("/messages/create", MessagesController.createMessage);
+app.put("/messages/:id", MessagesController.updateMessage);
+app.delete("/messages/:id", MessagesController.deleteMessage);
+
+app.get("/dialogs/:id", DialogsController.findDialog);
+app.post("/dialogs/create", DialogsController.createDialog);
+app.put("/dialogs/:id", DialogsController.updateDialog);
+app.delete("/dialogs/:id", DialogsController.deleteDialog);
 
 mongoose.connect(
   database.url,
