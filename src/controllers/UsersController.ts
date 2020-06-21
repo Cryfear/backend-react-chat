@@ -16,8 +16,44 @@ let UsersController = {
     );
   },
 
+  loginUser: (req: any, res: any) => {
+    UserSchema.findOne(
+      {
+        email: req.body.values.email,
+      },
+      (err, user) => {
+        if (err) return err;
+        return user;
+      }
+    ).then((data: any) => {
+      if (data) {
+        bcrypt.compare(req.body.values.password, data.password).then(result => {
+          if (result) {
+            if (req.session != null) {
+              req.session.userId = data._id;
+              req.session.userLogin = data.fullName;
+            }
+            console.log(req.session);
+            res.send({ isAccess: true, userId: data._id, userLogin: data.fullName });
+          } else {
+            res.send({ isAccess: false });
+          }
+        });
+      }
+    });
+  },
+
+  // logoutUser: (req: express.Request, res: express.Response) => {
+  //   if (req.session) {
+  //     req.session.destroy(() => {
+  //       res.redirect("/");
+  //     });
+  //   } else {
+  //     res.redirect("/");
+  //   }
+  // },
+
   createUser: (req: express.Request, res: express.Response) => {
-    console.log(req.body);
     bcrypt.hash(req.body.password, 4, (err: Error, hash: string) => {
       UserSchema.create({
         email: req.body.email,
@@ -28,10 +64,12 @@ let UsersController = {
         .then(data => {
           console.log("created user");
           res.send(data);
+          return data;
         })
-        .catch((err: express.Errback) => {
+        .catch(err => {
           console.log(err);
           res.send(err);
+          return err;
         });
     });
   },

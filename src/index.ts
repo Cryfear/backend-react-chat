@@ -6,8 +6,24 @@ import UsersController from "./controllers/UsersController";
 import MessagesController from "./controllers/MessagesController";
 import DialogsController from "./controllers/DialogsController";
 import cors from "cors";
+import session from "express-session";
+
+const MongoStore = require("connect-mongo")(session);
 
 const app = express();
+
+app.use(
+  session({
+    secret: database.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: false,
+    cookie: { secure: true },
+    store: new MongoStore({
+      mongooseConnection: mongoose.connection,
+    }),
+  })
+);
+
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
@@ -35,7 +51,18 @@ app.use((req: express.Request, res: express.Response, next: any) => {
 
 app.use(cors(corsOptions));
 
+// app.get("/auth", (req, res) => {
+//   console.log(req.session);
+//   if (req.session) {
+//     if (req.session.userId && req.session.userLogin) {
+//       res.send({ auth: true });
+//     } else res.send({ auth: false });
+//   } else res.send({ auth: false });
+// });
+
 app.get("/users/:id", UsersController.findUser);
+app.post("/login", UsersController.loginUser);
+//app.delete("/logout", UsersController.logoutUser);
 app.post("/users/create", UsersController.createUser);
 app.put("/users/:id", UsersController.updateUser);
 app.delete("/users/:id", UsersController.deleteUser);
