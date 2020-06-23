@@ -3,6 +3,16 @@ import bcrypt from "bcrypt";
 import express from "express";
 
 let UsersController = {
+  // test: () => {
+  //   return UserSchema.findById({ _id: "5ee448c7f323f03480ef5290" })
+  //     .populate("dialogs")
+  //     .exec((err, dialogs) => {
+  //       console.log("Populated User " + dialogs);
+  //     });
+  // },
+
+  // testing populating
+
   findUser: (req: express.Request, res: express.Response) => {
     UserSchema.findOne(
       {
@@ -31,10 +41,9 @@ let UsersController = {
           if (result) {
             if (req.session != null) {
               req.session.userId = data._id;
-              req.session.userLogin = data.fullName;
+              req.session.userEmail = data.email;
             }
-            console.log(req.session);
-            res.send({ isAccess: true, userId: data._id, userLogin: data.fullName });
+            res.send({ isAccess: true, userId: data._id, userEmail: data.email });
           } else {
             res.send({ isAccess: false });
           }
@@ -43,15 +52,25 @@ let UsersController = {
     });
   },
 
-  // logoutUser: (req: express.Request, res: express.Response) => {
-  //   if (req.session) {
-  //     req.session.destroy(() => {
-  //       res.redirect("/");
-  //     });
-  //   } else {
-  //     res.redirect("/");
-  //   }
-  // },
+  logoutUser: (req: express.Request, res: express.Response) => {
+    if (req.session) {
+      req.session.destroy(() => {
+        res.send("destroyed");
+      });
+    }
+  },
+
+  getMe: (req: express.Request, res: express.Response) => {
+    UserSchema.findOne(
+      {
+        email: req.body.email,
+      },
+      (err, user) => {
+        if (err) return res.send(err);
+        res.send(user);
+      }
+    );
+  },
 
   createUser: (req: express.Request, res: express.Response) => {
     bcrypt.hash(req.body.password, 4, (err: Error, hash: string) => {

@@ -62,10 +62,12 @@ app.use(cors(corsOptions));
 
 app.get("/users/:id", UsersController.findUser);
 app.post("/login", UsersController.loginUser);
-//app.delete("/logout", UsersController.logoutUser);
+app.post("/login/me", UsersController.getMe);
+app.delete("/logout", UsersController.logoutUser);
 app.post("/users/create", UsersController.createUser);
 app.put("/users/:id", UsersController.updateUser);
 app.delete("/users/:id", UsersController.deleteUser);
+//app.get("/users/dasdasdasdasdas", UsersController.test);
 
 app.get("/messages/:id", MessagesController.findMessage);
 app.post("/messages/create", MessagesController.createMessage);

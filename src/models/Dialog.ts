@@ -15,12 +15,16 @@ const DialogSchema = new Schema(
     _id: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    // partners: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "User",
+    // },
   },
   {
     timestamps: true,
   }
 );
 
-var Dialog = mongoose.model("Dialog", DialogSchema);
+var Dialog = mongoose.model("Dialog", DialogSchema, "dialogs");
 
 export default Dialog;

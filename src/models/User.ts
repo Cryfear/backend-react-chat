@@ -23,12 +23,16 @@ const UserSchema = new Schema(
       default: false,
     },
     last_seen: Date,
+    // dialogs: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Dialog",
+    // },
   },
   {
     timestamps: true,
   }
 );
 
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema, "users");
 
 export default User;
