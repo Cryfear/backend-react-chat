@@ -4,17 +4,16 @@ const Schema = mongoose.Schema;
 
 const MessageSchema = new Schema(
   {
-    avatar: String,
-    fullName: {
-      type: String,
-      required: true,
-    },
     date: Date,
     isReaded: {
       type: Boolean,
       default: false,
     },
     isTyping: Boolean,
+    dialog: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Dialog",
+    },
   },
   {
     timestamps: true,

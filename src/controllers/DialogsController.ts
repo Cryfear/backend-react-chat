@@ -1,9 +1,10 @@
-import DialogSchema from "../models/Dialog";
+import Dialog from "../models/Dialog";
+import User from "../models/User";
 import express from "express";
 
 let DialogsController = {
   findDialog: (req: express.Request, res: express.Response) => {
-    DialogSchema.findOne({
+    Dialog.findOne({
       _id: req.params.id,
     })
       .populate("users")
@@ -13,24 +14,32 @@ let DialogsController = {
       });
   },
 
-  createDialog: (req: express.Request, res: express.Response) => {
-    const Dialog = new DialogSchema({
-      fullName: req.body.fullName,
-      avatar: req.body.avatar || "none",
-    });
-    Dialog.save((err: Error) => {
-      if (err) return console.log(err);
-      console.log("created dialog");
-      res.send(Dialog);
-    });
+  createDialog: async (req: express.Request, res: express.Response) => {
+    let user = await User.findOne({ email: "dsadasd@dasd.cc" });
+    let user2 = await User.findOne({ email: "fakeemail@@yad.c" });
+    if (user && user2)
+      new Dialog({
+        name: req.body.name,
+        users: [user._id, user2._id],
+      })
+        .populate("users")
+        .execPopulate()
+        .then(data => {
+          res.send(data);
+          data.save();
+          console.log(data);
+        })
+        .catch(err => {
+          res.send(err);
+        });
   },
 
-  updateDialog: (req: express.Request, res: express.Response) => {
+  updateDialog: async (req: express.Request, res: express.Response) => {
     const updateDialog = {
       avatar: req.body.avatar,
       fullName: req.body.fullName,
     };
-    DialogSchema.findOneAndUpdate(
+    Dialog.findOneAndUpdate(
       {
         _id: req.params.id,
       },
@@ -46,7 +55,7 @@ let DialogsController = {
   },
 
   deleteDialog: (req: express.Request, res: express.Response) => {
-    DialogSchema.deleteOne(
+    Dialog.deleteOne(
       {
         _id: req.params.id,
       },

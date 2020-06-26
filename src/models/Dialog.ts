@@ -1,30 +1,10 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const DialogSchema = new Schema(
-  {
-    partnerId: Number,
-    avatar: String,
-    fullName: {
-      type: String,
-      required: true,
-    },
-    date: Date,
-    lastMessage: String,
-    unreadedCount: Number,
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
-    // partners: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "User",
-    // },
-  },
-  {
-    timestamps: true,
-  }
-);
+const DialogSchema = new Schema({
+  users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+});
 
-var Dialog = mongoose.model("Dialog", DialogSchema, "dialogs");
+var Dialog = mongoose.model("Dialog", DialogSchema);
 
 export default Dialog;

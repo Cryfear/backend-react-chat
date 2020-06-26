@@ -3,15 +3,16 @@ import bcrypt from "bcrypt";
 import express from "express";
 
 let UsersController = {
-  // test: () => {
-  //   return UserSchema.findById({ _id: "5ee448c7f323f03480ef5290" })
-  //     .populate("dialogs")
-  //     .exec((err, dialogs) => {
-  //       console.log("Populated User " + dialogs);
-  //     });
-  // },
-
-  // testing populating
+  getUsers: (req: express.Request, res: express.Response) => {
+    UserSchema.find()
+      .skip(Number(req.params.page) * 10)
+      .limit(10)
+      .then((data: any) => {
+        console.log(data);
+        res.send(data);
+        return data;
+      });
+  },
 
   findUser: (req: express.Request, res: express.Response) => {
     UserSchema.findOne(
@@ -74,14 +75,15 @@ let UsersController = {
 
   createUser: (req: express.Request, res: express.Response) => {
     bcrypt.hash(req.body.password, 4, (err: Error, hash: string) => {
-      UserSchema.create({
+      new UserSchema({
         email: req.body.email,
         fullName: req.body.fullName,
         password: hash,
         avatar: req.body.avatar || "none",
       })
+        .save()
         .then(data => {
-          console.log("created user");
+          console.log("created user", data);
           res.send(data);
           return data;
         })
