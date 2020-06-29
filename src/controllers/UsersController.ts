@@ -9,8 +9,15 @@ let UsersController = {
       .limit(10)
       .then((data: any) => {
         console.log(data);
-        res.send(data);
-        return data;
+        res.send(
+          data.map((item: any) => {
+            return {
+              fullName: item.fullName,
+              avatar: item.avatar,
+              isOnline: item.isOnline,
+            };
+          })
+        );
       });
   },
 
