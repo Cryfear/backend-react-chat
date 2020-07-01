@@ -5,18 +5,18 @@ import express from "express";
 let DialogsController = {
   findDialog: (req: express.Request, res: express.Response) => {
     Dialog.findOne({
-      _id: req.params.id,
+      users: [req.params.id, req.params.id_s],
     })
       .populate("users")
       .exec((err, dialog) => {
-        if (err) return console.log(err);
+        if (err) return res.json(err);
         res.json(dialog);
       });
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
-    let user = await User.findOne({ email: "dsadasd@dasd.cc" });
-    let user2 = await User.findOne({ email: "fakeemail@@yad.c" });
+    let user = await User.findOne({ email: "w23123d@ddd.d" });
+    let user2 = await User.findOne({ email: "testagainguys@loll.ru" });
     if (user && user2)
       new Dialog({
         name: req.body.name,

@@ -28,7 +28,7 @@ let UsersController = {
       },
       (err: express.Errback, user: express.Send) => {
         console.log(user);
-        if (err) return console.log(err);
+        if (err) res.send(err);
         res.send(user);
       }
     );

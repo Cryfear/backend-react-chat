@@ -1,6 +1,7 @@
 import express from "express";
 
 import MessageSchema from "../models/Message";
+import Dialog from "../models/Dialog";
 
 let MessagesController = {
   findMessage: (req: express.Request, res: express.Response) => {
@@ -9,21 +10,34 @@ let MessagesController = {
         _id: req.params.id,
       },
       (err, message) => {
-        if (err) return console.log(err);
+        if (err) res.send(err);
         res.send(message);
       }
     );
   },
 
-  createMessage: (req: express.Request, res: express.Response) => {
-    const Message = new MessageSchema({
-      fullName: req.body.fullName,
-      avatar: req.body.avatar || "none",
+  createMessage: async (req: express.Request, res: express.Response) => {
+    let dialog = await Dialog.findOne({
+      users: ["5ef4260bb253992934c20def", "5ef5eb112f86f22aec465c1f"],
     });
-    Message.save(() => {
-      console.log("created mesage");
-      res.send(Message);
-    });
+    if (dialog) {
+      new MessageSchema({
+        date: new Date(),
+        isReaded: true,
+        isTyping: false,
+        dialog: dialog._id,
+      })
+        .populate("dialog")
+        .execPopulate()
+        .then(data => {
+          res.send(data);
+          data.save();
+          console.log(data);
+        })
+        .catch(err => {
+          res.send(err);
+        });
+    }
   },
 
   updateMessage: (req: express.Request, res: express.Response) => {
@@ -40,7 +54,7 @@ let MessagesController = {
         new: true,
       },
       (err, message) => {
-        if (err) return res.send(message);
+        if (err) res.send(message);
         res.send(message);
       }
     );
@@ -52,7 +66,7 @@ let MessagesController = {
         _id: req.params.id,
       },
       message => {
-        if (message) return console.log(message);
+        if (message) res.send(message);
         res.send(message);
       }
     );

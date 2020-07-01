@@ -61,7 +61,7 @@ app.use(cors(corsOptions));
 // });
 
 app.get("/users/:id", UsersController.findUser);
-app.get('/getUsers/:page', UsersController.getUsers)
+app.get("/getUsers/:page", UsersController.getUsers);
 app.post("/login", UsersController.loginUser);
 app.post("/login/me", UsersController.getMe);
 app.delete("/logout", UsersController.logoutUser);
@@ -74,7 +74,7 @@ app.post("/messages/create", MessagesController.createMessage);
 app.put("/messages/:id", MessagesController.updateMessage);
 app.delete("/messages/:id", MessagesController.deleteMessage);
 
-app.get("/dialogs/:id", DialogsController.findDialog);
+app.get("/dialogs/:id&:id_s", DialogsController.findDialog);
 app.post("/dialogs/create", DialogsController.createDialog);
 app.put("/dialogs/:id", DialogsController.updateDialog);
 app.delete("/dialogs/:id", DialogsController.deleteDialog);
