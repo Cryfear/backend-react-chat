@@ -15,6 +15,7 @@ let UsersController = {
               fullName: item.fullName,
               avatar: item.avatar,
               isOnline: item.isOnline,
+              id: item._id,
             };
           })
         );

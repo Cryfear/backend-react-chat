@@ -15,8 +15,8 @@ let DialogsController = {
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
-    let user = await User.findOne({ email: "w23123d@ddd.d" });
-    let user2 = await User.findOne({ email: "testagainguys@loll.ru" });
+    let user = await User.findOne({ _id: req.body.id_1 });
+    let user2 = await User.findOne({ _id: req.body.id_2 });
     if (user && user2)
       new Dialog({
         name: req.body.name,

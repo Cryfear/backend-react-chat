@@ -22,7 +22,7 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    inOnline: { type: Boolean, default: false },
+    isOnline: { type: Boolean, default: false },
     last_seen: Date,
   }
   // {
