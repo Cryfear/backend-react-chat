@@ -8,7 +8,6 @@ let UsersController = {
       .skip(Number(req.params.page) * 10)
       .limit(10)
       .then((data: any) => {
-        console.log(data);
         res.send(
           data.map((item: any) => {
             return {

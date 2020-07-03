@@ -70,6 +70,7 @@ app.put("/users/:id", UsersController.updateUser);
 app.delete("/users/:id", UsersController.deleteUser);
 
 app.get("/messages/:id", MessagesController.findMessage);
+app.post("/messages/all", MessagesController.findDialogMessages);
 app.post("/messages/create", MessagesController.createMessage);
 app.put("/messages/:id", MessagesController.updateMessage);
 app.delete("/messages/:id", MessagesController.deleteMessage);

@@ -4,6 +4,10 @@ const Schema = mongoose.Schema;
 
 const MessageSchema = new Schema(
   {
+    creater: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     data: { type: String, required: true }, // текст сообщения, его содержимое
     date: Date,
     isReaded: {
