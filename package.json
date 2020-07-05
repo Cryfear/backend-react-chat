@@ -6,7 +6,6 @@
   "author": "Cryfear <vasil.arturok@yandex.ru>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index.ts",
     "watch": "nodemon src/index.js"
   },
   "devDependencies": {

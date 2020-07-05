@@ -2,11 +2,13 @@ import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import database from "./config/db";
-import UsersController from "./controllers/UsersController";
-import MessagesController from "./controllers/MessagesController";
-import DialogsController from "./controllers/DialogsController";
 import cors from "cors";
 import session from "express-session";
+
+import authRouter from "./routes/auth";
+import dialogsRouter from "./routes/dialogs";
+import messagesRouter from "./routes/messages";
+import usersRouter from "./routes/users";
 
 const MongoStore = require("connect-mongo")(session);
 
@@ -51,34 +53,10 @@ app.use((req: express.Request, res: express.Response, next: any) => {
 
 app.use(cors(corsOptions));
 
-// app.get("/auth", (req, res) => {
-//   console.log(req.session);
-//   if (req.session) {
-//     if (req.session.userId && req.session.userLogin) {
-//       res.send({ auth: true });
-//     } else res.send({ auth: false });
-//   } else res.send({ auth: false });
-// });
-
-app.get("/users/:id", UsersController.findUser);
-app.get("/getUsers/:page", UsersController.getUsers);
-app.post("/login", UsersController.loginUser);
-app.post("/login/me", UsersController.getMe);
-app.delete("/logout", UsersController.logoutUser);
-app.post("/users/create", UsersController.createUser);
-app.put("/users/:id", UsersController.updateUser);
-app.delete("/users/:id", UsersController.deleteUser);
-
-app.get("/messages/:id", MessagesController.findMessage);
-app.post("/messages/all", MessagesController.findDialogMessages);
-app.post("/messages/create", MessagesController.createMessage);
-app.put("/messages/:id", MessagesController.updateMessage);
-app.delete("/messages/:id", MessagesController.deleteMessage);
-
-app.get("/dialogs/:id&:id_s", DialogsController.findDialog);
-app.post("/dialogs/create", DialogsController.createDialog);
-app.put("/dialogs/:id", DialogsController.updateDialog);
-app.delete("/dialogs/:id", DialogsController.deleteDialog);
+app.use("", authRouter);
+app.use("", dialogsRouter);
+app.use("", messagesRouter);
+app.use("", usersRouter);
 
 mongoose.connect(
   database.url,

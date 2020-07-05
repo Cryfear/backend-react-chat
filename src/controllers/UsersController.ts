@@ -1,63 +1,56 @@
 import UserSchema from "../models/User";
 import bcrypt from "bcrypt";
 import express from "express";
+import jwt from "jsonwebtoken";
+import database from "../config/db";
 
 let UsersController = {
-  getUsers: (req: express.Request, res: express.Response) => {
-    UserSchema.find()
-      .skip(Number(req.params.page) * 10)
-      .limit(10)
-      .then((data: any) => {
-        res.send(
-          data.map((item: any) => {
-            return {
-              fullName: item.fullName,
-              avatar: item.avatar,
-              isOnline: item.isOnline,
-              id: item._id,
-            };
-          })
-        );
-      });
+  getUsers: async (req: express.Request, res: express.Response) => {
+    try {
+      const user = await UserSchema.find()
+        .skip(Number(req.params.page) * 10)
+        .limit(10);
+      res.send(
+        user.map((item: any) => {
+          // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
+          return {
+            fullName: item.fullName,
+            avatar: item.avatar,
+            isOnline: item.isOnline,
+            id: item._id,
+          };
+        })
+      );
+    } catch (err) {
+      res.status(401).send(err);
+    }
   },
 
-  findUser: (req: express.Request, res: express.Response) => {
-    UserSchema.findOne(
-      {
-        _id: req.params.id,
-      },
-      (err: express.Errback, user: express.Send) => {
-        console.log(user);
-        if (err) res.send(err);
-        res.send(user);
-      }
-    );
+  findUser: async (req: express.Request, res: express.Response) => {
+    try {
+      const user = UserSchema.findOne({ _id: req.params.id });
+      res.send(user);
+    } catch (err) {
+      res.status(404).send(err);
+    }
   },
 
-  loginUser: (req: any, res: any) => {
-    UserSchema.findOne(
-      {
-        email: req.body.values.email,
-      },
-      (err, user) => {
-        if (err) return err;
-        return user;
-      }
-    ).then((data: any) => {
-      if (data) {
-        bcrypt.compare(req.body.values.password, data.password).then(result => {
-          if (result) {
-            if (req.session != null) {
-              req.session.userId = data._id;
-              req.session.userEmail = data.email;
-            }
-            res.send({ isAccess: true, userId: data._id, userEmail: data.email });
-          } else {
-            res.send({ isAccess: false });
-          }
-        });
-      }
+  loginUser: async (req: any, res: any) => {
+    const user: any = await UserSchema.findOne({
+      email: req.body.values.email,
     });
+    if (user) {
+      bcrypt.compare(req.body.values.password, user.password).then(result => {
+        if (result) {
+          const accessToken = jwt.sign({ email: user.email }, database.SESSION_SECRET);
+          res.header("auth-token", accessToken).send(accessToken);
+        } else {
+          res.send("Username or password incorrect");
+        }
+      });
+    } else {
+      res.send("Username or password incorrect");
+    }
   },
 
   logoutUser: (req: express.Request, res: express.Response) => {
@@ -69,6 +62,7 @@ let UsersController = {
   },
 
   getMe: (req: express.Request, res: express.Response) => {
+    console.log(req.user);
     UserSchema.findOne(
       {
         email: req.body.email,
@@ -86,17 +80,16 @@ let UsersController = {
         email: req.body.email,
         fullName: req.body.fullName,
         password: hash,
-        avatar: req.body.avatar || "none",
       })
         .save()
         .then(data => {
           console.log("created user", data);
-          res.send(data);
+          res.send({ ...data, responseCode: "success" });
           return data;
         })
         .catch(err => {
           console.log(err);
-          res.send(err);
+          res.send({ responseCode: "fail" });
           return err;
         });
     });
