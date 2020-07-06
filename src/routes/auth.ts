@@ -1,6 +1,6 @@
 import router from "express";
 import UsersController from "../controllers/UsersController";
-const { verifyToken } = require("../controllers/verifyToken");
+import { verifyToken } from "../controllers/verifyToken";
 
 const routs = router.Router();
 

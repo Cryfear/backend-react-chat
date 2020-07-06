@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import database from "./config/db";
@@ -40,12 +40,12 @@ const corsOptions = {
   "Access-Control-Allow-Credentials": true,
 };
 
-app.use((req: express.Request, res: express.Response, next: any) => {
+app.use((req: express.Request, res: express.Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
-  app.options("*", (req, res) => {
+  app.options("*", (req: express.Request, res: express.Response) => {
     res.header("Access-Control-Allow-Methods", "GET, PATCH, PUT, POST, DELETE, OPTIONS");
     res.send();
   });

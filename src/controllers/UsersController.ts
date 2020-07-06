@@ -4,6 +4,13 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import database from "../config/db";
 
+interface itemTypes {
+  fullName: string;
+  avatar: string;
+  isOnline: boolean;
+  id: string;
+}
+
 let UsersController = {
   getUsers: async (req: express.Request, res: express.Response) => {
     try {
@@ -11,15 +18,18 @@ let UsersController = {
         .skip(Number(req.params.page) * 10)
         .limit(10);
       res.send(
-        user.map((item: any) => {
-          // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
-          return {
-            fullName: item.fullName,
-            avatar: item.avatar,
-            isOnline: item.isOnline,
-            id: item._id,
-          };
-        })
+        user.map(
+          (item: any): itemTypes => {
+            const { fullName, avatar, isOnline, id } = item;
+            // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
+            return {
+              fullName,
+              avatar,
+              isOnline,
+              id,
+            };
+          }
+        )
       );
     } catch (err) {
       res.status(401).send(err);
@@ -35,7 +45,7 @@ let UsersController = {
     }
   },
 
-  loginUser: async (req: any, res: any) => {
+  loginUser: async (req: express.Request, res: express.Response) => {
     const user: any = await UserSchema.findOne({
       email: req.body.values.email,
     });
@@ -43,7 +53,13 @@ let UsersController = {
       bcrypt.compare(req.body.values.password, user.password).then(result => {
         if (result) {
           const accessToken = jwt.sign({ email: user.email }, database.SESSION_SECRET);
-          res.header("auth-token", accessToken).send(accessToken);
+          res.header("auth-token", accessToken).send({
+            token: accessToken,
+            email: user.email,
+            fullName: user.fullName,
+            id: user._id,
+            responseCode: "success",
+          });
         } else {
           res.send("Username or password incorrect");
         }
@@ -61,17 +77,16 @@ let UsersController = {
     }
   },
 
-  getMe: (req: express.Request, res: express.Response) => {
-    console.log(req.user);
-    UserSchema.findOne(
-      {
-        email: req.body.email,
-      },
-      (err, user) => {
-        if (err) return res.send(err);
-        res.send(user);
-      }
-    );
+  getMe: async (req: express.Request, res: express.Response) => {
+    const user: any = await UserSchema.findOne({
+      email: req.body.email,
+    });
+    if (user) {
+      const { email, fullName, _id: id } = user;
+      res.send({ email, fullName, id, responseCode: "success" });
+    } else {
+      res.status(400).send({ responseCode: "User is not found" });
+    }
   },
 
   createUser: (req: express.Request, res: express.Response) => {

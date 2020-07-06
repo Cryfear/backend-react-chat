@@ -9,15 +9,13 @@ let MessagesController = {
     let dialog = await Dialog.findOne({
       users: [req.body.id2, req.body.id1],
     });
-    console.log(dialog, req.body.id2, req.body.id1);
     if (dialog) {
       MessageSchema.find({ dialog: dialog.id })
         .then(data => {
           res.send(data);
-          console.log(data);
         })
         .catch(err => {
-          res.send("ant-affixerr");
+          res.send(err);
         });
     } else {
       res.send("error!");
