@@ -6,7 +6,7 @@ import express from "express";
 let DialogsController = {
   findDialog: async (req: express.Request, res: express.Response) => {
     const dialog = Dialog.findOne({
-      users: [req.params.id, req.params.id_s],
+      users: { $all: [req.params.id, req.params.id_s] },
     });
     if (dialog) {
       res.send(dialog);
@@ -20,7 +20,8 @@ let DialogsController = {
     let user2 = await User.findOne({ _id: req.body.id_2 });
 
     if (user && user2) {
-      let dio = await Dialog.findOne({ users: [user._id, user2._id] });
+      console.log(user._id, user2._id);
+      let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
       if (dio === null) {
         new Dialog({
           name: req.body.name,

@@ -7,7 +7,7 @@ import User from "../models/User";
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
     let dialog = await Dialog.findOne({
-      users: [req.body.id2, req.body.id1],
+      users: { $all: [req.body.id2, req.body.id1] },
     });
     if (dialog) {
       MessageSchema.find({ dialog: dialog.id })
@@ -36,7 +36,7 @@ let MessagesController = {
 
   createMessage: async (req: express.Request, res: express.Response) => {
     let dialog = await Dialog.findOne({
-      users: [req.body.id2, req.body.id1], // id2 - это я
+      users: { $all: [req.body.id2, req.body.id1] }, // id2 - это я
     });
     let me = await User.findOne({
       _id: req.body.id2,
