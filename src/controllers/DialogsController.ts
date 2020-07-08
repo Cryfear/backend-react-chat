@@ -1,17 +1,18 @@
 import Dialog from "../models/Dialog";
+import Message from "../models/Message";
 import User from "../models/User";
 import express from "express";
 
 let DialogsController = {
-  findDialog: (req: express.Request, res: express.Response) => {
-    Dialog.findOne({
+  findDialog: async (req: express.Request, res: express.Response) => {
+    const dialog = Dialog.findOne({
       users: [req.params.id, req.params.id_s],
-    })
-      .populate("users")
-      .exec((err, dialog) => {
-        if (err) return res.json(err);
-        res.json(dialog);
-      });
+    });
+    if (dialog) {
+      res.send(dialog);
+    } else {
+      res.send("error");
+    }
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
@@ -28,15 +29,15 @@ let DialogsController = {
           .populate("users")
           .execPopulate()
           .then(data => {
-            res.send(data);
+            res.send("success");
             data.save();
-            console.log(data);
           })
           .catch(err => {
             res.send(err);
           });
       } else {
-        res.send("такой диалог уже существует.");
+        const messages = await Message.find({ dialog: dio._id });
+        res.send(messages);
       }
     }
   },

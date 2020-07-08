@@ -41,7 +41,7 @@ let MessagesController = {
     let me = await User.findOne({
       _id: req.body.id2,
     });
-    console.log(dialog, req.body.data, req.body.id1, req.body.id2);
+    console.log(req.body.data, req.body.id1, req.body.id2);
     if (dialog && me) {
       new MessageSchema({
         date: new Date(),
