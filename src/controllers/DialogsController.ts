@@ -5,14 +5,29 @@ import express from "express";
 
 let DialogsController = {
   findDialog: async (req: express.Request, res: express.Response) => {
+    console.log(req.params);
     const dialog = Dialog.findOne({
-      users: { $all: [req.params.id, req.params.id_s] },
+      users: { $all: [req.params.id, req.params.id2] },
+    }).exec((err, dialog) => {
+      if (dialog) {
+        res.send(dialog);
+      } else {
+        res.status(400).send("error");
+      }
     });
-    if (dialog) {
-      res.send(dialog);
-    } else {
-      res.send("error");
-    }
+  },
+
+  findMyDialog: async (req: express.Request, res: express.Response) => {
+    console.log(req.params);
+    const dialog = Dialog.find({
+      users: { $in: [req.params.id] },
+    }).exec((err, dialog) => {
+      if (dialog) {
+        res.send(dialog);
+      } else {
+        res.status(400).send("error");
+      }
+    });
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {

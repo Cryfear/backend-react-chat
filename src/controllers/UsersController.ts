@@ -2,7 +2,6 @@ import UserSchema from "../models/User";
 import bcrypt from "bcrypt";
 import express from "express";
 import jwt from "jsonwebtoken";
-import database from "../config/db";
 
 interface itemTypes {
   fullName: string;
@@ -52,7 +51,9 @@ let UsersController = {
     if (user) {
       bcrypt.compare(req.body.values.password, user.password).then(result => {
         if (result) {
-          const accessToken = jwt.sign({ email: user.email }, database.SESSION_SECRET);
+          const accessToken = jwt.sign({ email: user.email }, process.env.SESSION_SECRET, {
+            expiresIn: process.env.JWT_MAXAGE,
+          });
           res.header("auth-token", accessToken).send({
             token: accessToken,
             email: user.email,

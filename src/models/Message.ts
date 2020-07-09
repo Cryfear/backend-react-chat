@@ -9,12 +9,12 @@ const MessageSchema = new Schema(
       ref: "User",
     },
     data: { type: String, required: true }, // текст сообщения, его содержимое
-    date: Date,
+    date: { type: Date, default: new Date() },
     isReaded: {
       type: Boolean,
       default: false,
     },
-    isTyping: Boolean,
+    isTyping: { type: Boolean, default: false },
     dialog: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Dialog",

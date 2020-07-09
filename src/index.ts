@@ -1,24 +1,37 @@
 import express, { NextFunction } from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
-import database from "./config/db";
 import cors from "cors";
 import session from "express-session";
-
 import authRouter from "./routes/auth";
 import dialogsRouter from "./routes/dialogs";
 import messagesRouter from "./routes/messages";
 import usersRouter from "./routes/users";
+import updateLastSeen from "./updateLastSeen";
+import * as dotenv from "dotenv";
 
 const MongoStore = require("connect-mongo")(session);
 
 const app = express();
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      DATABASE_URL: string;
+      NODE_ENV: "development" | "production";
+      PORT?: string;
+      SESSION_SECRET: any; // confict with jwt idk how to fix it
+    }
+  }
+}
+
+dotenv.config();
+
 app.use(
   session({
-    secret: database.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: true,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: { secure: true },
     store: new MongoStore({
       mongooseConnection: mongoose.connection,
@@ -27,11 +40,14 @@ app.use(
 );
 
 app.use(bodyParser.json());
+
 app.use(
   bodyParser.urlencoded({
     extended: false,
   })
 );
+
+app.use(updateLastSeen);
 
 const corsOptions = {
   origin: ["http://127.0.0.1:3000", "http://localhost:3000"],
@@ -59,15 +75,16 @@ app.use("", messagesRouter);
 app.use("", usersRouter);
 
 mongoose.connect(
-  database.url,
+  process.env.DATABASE_URL,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false,
   },
   () => {
-    app.listen(8888, () => {
-      console.log("We are live on " + 8888);
+    app.listen(process.env.PORT, () => {
+      console.log(`We are live on ${process.env.PORT}`);
     });
   }
 );
