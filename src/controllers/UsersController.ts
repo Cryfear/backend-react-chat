@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import express from "express";
 import jwt from "jsonwebtoken";
 
-interface itemTypes {
+interface userTypes {
   fullName: string;
   avatar: string;
   isOnline: boolean;
@@ -18,8 +18,8 @@ let UsersController = {
         .limit(10);
       res.send(
         user.map(
-          (item: any): itemTypes => {
-            const { fullName, avatar, isOnline, id } = item;
+          (user: any): userTypes => {
+            const { fullName, avatar, isOnline, id } = user;
             // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
             return {
               fullName,

@@ -1,5 +1,5 @@
 import express from "express";
-
+import { io } from "../index";
 import MessageSchema from "../models/Message";
 import Dialog from "../models/Dialog";
 import User from "../models/User";
@@ -36,16 +36,17 @@ let MessagesController = {
 
   createMessage: async (req: express.Request, res: express.Response) => {
     let dialog = await Dialog.findOne({
-      users: { $all: [req.body.id2, req.body.id1] }, // id2 - это я
+      users: { $all: [req.body.id2, req.body.id1] },
     });
     let me = await User.findOne({
       _id: req.body.id2,
     });
+
     console.log(req.body.data, req.body.id1, req.body.id2);
     if (dialog && me) {
       new MessageSchema({
         date: new Date(),
-        isReaded: true,
+        isReaded: false,
         isTyping: false,
         data: req.body.data,
         dialog: dialog._id,
@@ -54,6 +55,8 @@ let MessagesController = {
         .populate("dialog")
         .execPopulate()
         .then(data => {
+          io.emit("qqq", data);
+
           res.send(data);
           data.save();
         })

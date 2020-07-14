@@ -1,18 +1,24 @@
-import express, { NextFunction } from "express";
+import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cors from "cors";
+import * as dotenv from "dotenv";
+import createSocket from "./core/socket";
 import session from "express-session";
+import { corsFunction, corsSettings } from "./core/cors";
 import authRouter from "./routes/auth";
 import dialogsRouter from "./routes/dialogs";
 import messagesRouter from "./routes/messages";
 import usersRouter from "./routes/users";
-import updateLastSeen from "./updateLastSeen";
-import * as dotenv from "dotenv";
-
-const MongoStore = require("connect-mongo")(session);
+import updateLastSeen from "./utils/updateLastSeen";
+import expressSession from "./core/expressSession";
 
 const app = express();
+const http = require("http").createServer(app);
+
+export const io = createSocket(http);
+
+dotenv.config();
 
 declare global {
   namespace NodeJS {
@@ -20,27 +26,18 @@ declare global {
       DATABASE_URL: string;
       NODE_ENV: "development" | "production";
       PORT?: string;
-      SESSION_SECRET: any; // confict with jwt idk how to fix it
+      SESSION_SECRET: any; // confict with jwt idk how to fix it now
     }
   }
 }
 
-dotenv.config();
+// express session
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    cookie: { secure: true },
-    store: new MongoStore({
-      mongooseConnection: mongoose.connection,
-    }),
-  })
-);
+app.use(session(expressSession));
+
+// parsing
 
 app.use(bodyParser.json());
-
 app.use(
   bodyParser.urlencoded({
     extended: false,
@@ -49,30 +46,19 @@ app.use(
 
 app.use(updateLastSeen);
 
-const corsOptions = {
-  origin: ["http://127.0.0.1:3000", "http://localhost:3000"],
-  optionsSuccessStatus: 200,
-  options: "*",
-  "Access-Control-Allow-Credentials": true,
-};
+// cors
 
-app.use((req: express.Request, res: express.Response, next: NextFunction) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-  app.options("*", (req: express.Request, res: express.Response) => {
-    res.header("Access-Control-Allow-Methods", "GET, PATCH, PUT, POST, DELETE, OPTIONS");
-    res.send();
-  });
-});
+app.use(corsFunction(app));
+app.use(cors(corsSettings));
 
-app.use(cors(corsOptions));
+// routes
 
 app.use("", authRouter);
 app.use("", dialogsRouter);
 app.use("", messagesRouter);
 app.use("", usersRouter);
+
+// connecting
 
 mongoose.connect(
   process.env.DATABASE_URL,
@@ -83,7 +69,7 @@ mongoose.connect(
     useFindAndModify: false,
   },
   () => {
-    app.listen(process.env.PORT, () => {
+    http.listen(process.env.PORT, () => {
       console.log(`We are live on ${process.env.PORT}`);
     });
   }
