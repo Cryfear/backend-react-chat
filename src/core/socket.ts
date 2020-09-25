@@ -1,7 +1,7 @@
 import socket from "socket.io";
 import { Http2Server } from "http2";
 
-export default (http: Http2Server) => {
+export default (http: any) => {
   const io = socket(http);
 
   io.on("connection", (socket: any) => {
