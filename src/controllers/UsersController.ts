@@ -14,8 +14,8 @@ let UsersController = {
   getUsers: async (req: express.Request, res: express.Response) => {
     try {
       const user = await UserSchema.find()
-        .skip(Number(req.params.page) * 10)
-        .limit(10);
+        .skip(Number(req.params.page) * 20)
+        .limit(20);
       res.send(
         user.map(
           (user: any): userTypes => {
@@ -37,8 +37,12 @@ let UsersController = {
 
   findUser: async (req: express.Request, res: express.Response) => {
     try {
-      const user = UserSchema.findOne({ _id: req.params.id });
-      res.send(user);
+      const user: any = await UserSchema.findOne({ _id: req.params.id });
+      const { fullName, avatar, isOnline, id } = user;
+
+      // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
+
+      res.send({ fullName, avatar, isOnline, id });
     } catch (err) {
       res.status(404).send(err);
     }
@@ -49,11 +53,15 @@ let UsersController = {
       email: req.body.values.email,
     });
     if (user) {
-      bcrypt.compare(req.body.values.password, user.password).then(result => {
+      bcrypt.compare(req.body.values.password, user.password).then((result) => {
         if (result) {
-          const accessToken = jwt.sign({ email: user.email }, process.env.SESSION_SECRET, {
-            expiresIn: process.env.JWT_MAXAGE,
-          });
+          const accessToken = jwt.sign(
+            { email: user.email },
+            process.env.SESSION_SECRET,
+            {
+              expiresIn: process.env.JWT_MAXAGE,
+            }
+          );
           res.header("auth-token", accessToken).send({
             token: accessToken,
             email: user.email,
@@ -74,6 +82,7 @@ let UsersController = {
     if (req.session) {
       req.session.destroy(() => {
         res.send("destroyed");
+        console.log("logout");
       });
     }
   },
@@ -98,12 +107,12 @@ let UsersController = {
         password: hash,
       })
         .save()
-        .then(data => {
+        .then((data) => {
           console.log("created user", data);
           res.send({ ...data, responseCode: "success" });
           return data;
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
           res.send({ responseCode: "fail" });
           return err;
@@ -128,6 +137,7 @@ let UsersController = {
       (err: Error, user) => {
         if (err) return res.send(err);
         res.send(user);
+        console.log("user updated");
       }
     );
   },
@@ -137,9 +147,10 @@ let UsersController = {
       {
         _id: req.params.id,
       },
-      data => {
+      (data) => {
         if (data) return console.log(data);
         res.send(data);
+        console.log("user deleted");
       }
     );
   },

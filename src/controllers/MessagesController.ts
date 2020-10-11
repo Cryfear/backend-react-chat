@@ -11,10 +11,10 @@ let MessagesController = {
     });
     if (dialog) {
       MessageSchema.find({ dialog: dialog.id })
-        .then(data => {
+        .then((data: any) => {
           res.send(data);
         })
-        .catch(err => {
+        .catch((err) => {
           res.send(err);
         });
     } else {
@@ -32,6 +32,22 @@ let MessagesController = {
         res.send(message);
       }
     );
+  },
+
+  findLastMessage: async (req: express.Request, res: express.Response) => {
+    let dialog = await Dialog.findOne({
+      users: { $all: [req.body.id2, req.body.id1] },
+    });
+    if (dialog) {
+      MessageSchema.find({ dialog: dialog.id })
+        .sort("-date")
+        .limit(1)
+        .exec(function (err, message) {
+          console.log(message);
+          if (err) res.send(err);
+          res.send(message);
+        });
+    }
   },
 
   createMessage: async (req: express.Request, res: express.Response) => {
@@ -54,13 +70,13 @@ let MessagesController = {
       })
         .populate("dialog")
         .execPopulate()
-        .then(data => {
+        .then((data) => {
           io.emit("qqq", data);
 
           res.send(data);
           data.save();
         })
-        .catch(err => {
+        .catch((err) => {
           res.send(err);
         });
     }
@@ -91,7 +107,7 @@ let MessagesController = {
       {
         _id: req.params.id,
       },
-      message => {
+      (message) => {
         if (message) res.send(message);
         res.send(message);
       }

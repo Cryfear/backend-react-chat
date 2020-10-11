@@ -18,8 +18,7 @@ let DialogsController = {
   },
 
   findMyDialog: async (req: express.Request, res: express.Response) => {
-    console.log(req.params);
-    const dialog = Dialog.find({
+    const dialog = await Dialog.find({
       users: { $in: [req.params.id] },
     }).exec((err, dialog) => {
       if (dialog) {
@@ -35,7 +34,6 @@ let DialogsController = {
     let user2 = await User.findOne({ _id: req.body.id_2 });
 
     if (user && user2) {
-      console.log(user._id, user2._id);
       let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
       if (dio === null) {
         new Dialog({
@@ -44,11 +42,11 @@ let DialogsController = {
         })
           .populate("users")
           .execPopulate()
-          .then(data => {
+          .then((data) => {
             res.send("success");
             data.save();
           })
-          .catch(err => {
+          .catch((err) => {
             res.send(err);
           });
       } else {
@@ -71,7 +69,7 @@ let DialogsController = {
       {
         new: true,
       },
-      err => {
+      (err) => {
         if (err) return console.log(err);
         res.send(err);
       }
@@ -83,7 +81,7 @@ let DialogsController = {
       {
         _id: req.params.id,
       },
-      err => {
+      (err) => {
         if (err) return console.log(err);
         res.send(err);
       }
