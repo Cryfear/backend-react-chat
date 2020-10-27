@@ -3,8 +3,12 @@ const Schema = mongoose.Schema;
 
 const DialogSchema = new Schema(
   {
-    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }],
+    users: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    ],
+    isTyping: { type: Boolean, default: false },
   },
+
   {
     timestamps: true,
   }

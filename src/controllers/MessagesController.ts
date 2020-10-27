@@ -18,7 +18,7 @@ let MessagesController = {
           res.send(err);
         });
     } else {
-      res.send("error!");
+      res.status(404).send("error!");
     }
   },
 
@@ -29,7 +29,7 @@ let MessagesController = {
       },
       (err, message) => {
         if (err) res.send(err);
-        res.send(message);
+        res.status(404).send(message);
       }
     );
   },
@@ -43,10 +43,24 @@ let MessagesController = {
         .sort("-date")
         .limit(1)
         .exec(function (err, message) {
-          console.log(message);
-          if (err) res.send(err);
+          if (err) res.status(404).send(err);
           res.send(message);
         });
+    }
+  },
+
+  getUnreadMessages: async (req: express.Request, res: express.Response) => {
+    let dialog = await Dialog.findOne({
+      users: { $all: [req.body.id2, req.body.id1] },
+    });
+    if (dialog) {
+      MessageSchema.find({ dialog: dialog.id, isReaded: false }).exec(function (
+        err,
+        message
+      ) {
+        if (err) res.status(404).send(err);
+        res.send(message);
+      });
     }
   },
 
@@ -77,7 +91,7 @@ let MessagesController = {
           data.save();
         })
         .catch((err) => {
-          res.send(err);
+          res.status(404).send(err);
         });
     }
   },
@@ -96,7 +110,7 @@ let MessagesController = {
         new: true,
       },
       (err, message) => {
-        if (err) res.send(message);
+        if (err) res.status(404).send(message);
         res.send(message);
       }
     );

@@ -14,7 +14,6 @@ const MessageSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    isTyping: { type: Boolean, default: false },
     dialog: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Dialog",
