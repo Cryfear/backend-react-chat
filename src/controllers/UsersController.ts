@@ -108,12 +108,12 @@ let UsersController = {
         password: hash,
       })
         .save()
-        .then((data) => {
+        .then((data: Object) => {
           console.log("created user", data);
           res.send({ ...data, responseCode: "success" });
           return data;
         })
-        .catch((err) => {
+        .catch((err: string) => {
           console.log(err);
           res.send({ responseCode: "fail" });
           return err;
