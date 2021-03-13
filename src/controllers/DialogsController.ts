@@ -81,6 +81,7 @@ let DialogsController = {
       {
         _id: req.params.id,
       },
+      undefined,
       (err) => {
         if (err) return console.log(err);
         res.send(err);

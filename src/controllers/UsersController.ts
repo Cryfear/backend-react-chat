@@ -48,34 +48,35 @@ let UsersController = {
     }
   },
 
-  loginUser: async (req: express.Request, res: express.Response) => {
-    const user: any = await UserSchema.findOne({
+  loginUser: (req: express.Request, res: express.Response) => {
+    UserSchema.findOne({
       email: req.body.values.email,
-    });
-    if (user) {
-      bcrypt.compare(req.body.values.password, user.password).then((result) => {
-        if (result) {
-          const accessToken = jwt.sign(
-            { email: user.email },
-            process.env.SESSION_SECRET,
-            {
-              expiresIn: process.env.JWT_MAXAGE,
-            }
-          );
-          res.header("auth-token", accessToken).send({
-            token: accessToken,
-            email: user.email,
-            fullName: user.fullName,
-            id: user._id,
-            responseCode: "success",
-          });
-        } else {
-          res.send("Username or password incorrect");
-        }
+    })
+      .then((user: any) => {
+        bcrypt.compare(req.body.values.password, user.password).then((result) => {
+          if (result) {
+            const accessToken = jwt.sign(
+              { email: user.email },
+              process.env.SESSION_SECRET,
+              {
+                expiresIn: process.env.JWT_MAXAGE,
+              }
+            );
+            res.header("auth-token", accessToken).send({
+              token: accessToken,
+              email: user.email,
+              fullName: user.fullName,
+              id: user._id,
+              responseCode: "success",
+            });
+          } else {
+            res.send("Username or password incorrect");
+          }
+        });
+      })
+      .catch(() => {
+        res.send("Username or password incorrect");
       });
-    } else {
-      res.send("Username or password incorrect");
-    }
   },
 
   logoutUser: (req: express.Request, res: express.Response) => {
@@ -147,6 +148,7 @@ let UsersController = {
       {
         _id: req.params.id,
       },
+      undefined,
       (data) => {
         if (data) return console.log(data);
         res.send(data);

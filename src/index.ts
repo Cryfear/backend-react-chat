@@ -1,6 +1,5 @@
 import express from "express";
 import mongoose from "mongoose";
-import bodyParser from "body-parser";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import createSocket from "./core/socket";
@@ -26,25 +25,24 @@ declare global {
       DATABASE_URL: string;
       NODE_ENV: "development" | "production";
       PORT?: string;
-      SESSION_SECRET: any; // confict with jwt idk how to fix it now
+      SESSION_SECRET: string;
     }
   }
 }
 
 // express session
 
-app.use(session(expressSession));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}));
 
 // parsing
 
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
-
-app.use(updateLastSeen);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // cors
 
@@ -53,10 +51,10 @@ app.use(cors(corsSettings));
 
 // routes
 
-app.use("", authRouter);
-app.use("", dialogsRouter);
-app.use("", messagesRouter);
-app.use("", usersRouter);
+app.use("/", authRouter);
+app.use("/", dialogsRouter);
+app.use("/", messagesRouter);
+app.use("/", usersRouter);
 
 // connecting
 

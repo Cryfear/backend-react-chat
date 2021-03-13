@@ -3,6 +3,7 @@ import { io } from "../index";
 import MessageSchema from "../models/Message";
 import Dialog from "../models/Dialog";
 import User from "../models/User";
+import { CallbackError } from "mongoose";
 
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
@@ -27,7 +28,7 @@ let MessagesController = {
       {
         _id: req.params.id,
       },
-      (err, message) => {
+      (err: CallbackError, message: any) => {
         if (err) res.send(err);
         res.status(404).send(message);
       }
@@ -109,7 +110,7 @@ let MessagesController = {
       {
         new: true,
       },
-      (err, message) => {
+      (err: CallbackError, message: any) => {
         if (err) res.status(404).send(message);
         res.send(message);
       }
@@ -121,7 +122,8 @@ let MessagesController = {
       {
         _id: req.params.id,
       },
-      (message) => {
+      undefined,
+      (message: any) => {
         if (message) res.send(message);
         res.send(message);
       }

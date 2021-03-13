@@ -5,6 +5,9 @@ export default (http: Socket) => {
 
   io.on("connection", (socket: Socket) => {
     console.log("socket connected");
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
     socket.on("DIALOGS:JOIN", (msg: any) => {
       console.log(msg, 'here');
     });
