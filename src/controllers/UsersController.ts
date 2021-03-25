@@ -49,6 +49,7 @@ let UsersController = {
   },
 
   loginUser: (req: express.Request, res: express.Response) => {
+    console.log(req.body)
     UserSchema.findOne({
       email: req.body.values.email,
     })
@@ -100,24 +101,25 @@ let UsersController = {
     }
   },
 
-  createUser: (req: express.Request, res: express.Response) => {
-    bcrypt.hash(req.body.password, 4, (err: Error, hash: string) => {
-      new UserSchema({
+  createUser: async (req: express.Request, res: express.Response) => {
+    bcrypt.hash(req.body.password, 4, async (_: Error, hash: string) => {
+      console.log(req.body);
+      const User = await new UserSchema({
         email: req.body.email,
-        fullName: req.body.fullName,
+        fullName: req.body.name,
         password: hash,
+      });
+      User.save().then((data: Object) => {
+        console.log("created user", data);
+        res.send({ ...data, responseCode: "success" });
+        return data;
       })
-        .save()
-        .then((data: Object) => {
-          console.log("created user", data);
-          res.send({ ...data, responseCode: "success" });
-          return data;
-        })
         .catch((err: string) => {
           console.log(err);
           res.send({ responseCode: "fail" });
           return err;
-        });
+        });;
+
     });
   },
 

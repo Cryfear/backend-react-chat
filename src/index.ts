@@ -1,6 +1,5 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
 import * as dotenv from "dotenv";
 import createSocket from "./core/socket";
 import session from "express-session";
@@ -9,10 +8,9 @@ import authRouter from "./routes/auth";
 import dialogsRouter from "./routes/dialogs";
 import messagesRouter from "./routes/messages";
 import usersRouter from "./routes/users";
-import updateLastSeen from "./utils/updateLastSeen";
-import expressSession from "./core/expressSession";
 
 const app = express();
+const cors = require('cors');
 const http = require("http").createServer(app);
 
 export const io = createSocket(http);
@@ -64,7 +62,7 @@ mongoose.connect(
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
-    useFindAndModify: false,
+    useFindAndModify: false
   },
   () => {
     http.listen(process.env.PORT, () => {
