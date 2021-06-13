@@ -89,27 +89,26 @@ let UsersController = {
     }
   },
 
-  getMe: async (req: express.Request, res: express.Response) => {
-    const user: any = await UserSchema.findOne({
+  getMe: (req: express.Request, res: express.Response) => {
+    UserSchema.findOne({
       email: req.body.email,
-    });
-    if (user) {
+    }).then((user: any) => {
+      console.log(user)
       const { email, fullName, _id: id } = user;
       res.send({ email, fullName, id, responseCode: "success" });
-    } else {
+    }).catch(data => {
       res.status(400).send({ responseCode: "User is not found" });
-    }
+    })
   },
 
-  createUser: async (req: express.Request, res: express.Response) => {
-    bcrypt.hash(req.body.password, 4, async (_: Error, hash: string) => {
+  createUser: (req: express.Request, res: express.Response) => {
+    bcrypt.hash(req.body.password, 4, (_: Error, hash: string) => {
       console.log(req.body);
-      const User = await new UserSchema({
+      new UserSchema({
         email: req.body.email,
         fullName: req.body.name,
         password: hash,
-      });
-      User.save().then((data: Object) => {
+      }).save().then((data: Object) => {
         console.log("created user", data);
         res.send({ ...data, responseCode: "success" });
         return data;
@@ -118,7 +117,7 @@ let UsersController = {
           console.log(err);
           res.send({ responseCode: "fail" });
           return err;
-        });;
+        });
 
     });
   },

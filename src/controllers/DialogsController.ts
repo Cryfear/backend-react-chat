@@ -20,13 +20,16 @@ let DialogsController = {
   findMyDialog: async (req: express.Request, res: express.Response) => {
     const dialog = await Dialog.find({
       users: { $in: [req.params.id] },
-    }).exec((err, dialog) => {
-      if (dialog) {
-        res.send(dialog);
-      } else {
-        res.status(400).send("error");
-      }
-    });
+    })
+      .skip(Number(req.params.page) * 20)
+      .limit(20)
+      .exec((err, dialog) => {
+        if (dialog) {
+          res.send(dialog);
+        } else {
+          res.status(400).send("error");
+        }
+      });
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
