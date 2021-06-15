@@ -93,7 +93,6 @@ let UsersController = {
     UserSchema.findOne({
       email: req.body.email,
     }).then((user: any) => {
-      console.log(user)
       const { email, fullName, _id: id } = user;
       res.send({ email, fullName, id, responseCode: "success" });
     }).catch(data => {
