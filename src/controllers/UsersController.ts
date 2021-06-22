@@ -14,21 +14,19 @@ let UsersController = {
   getUsers: async (req: express.Request, res: express.Response) => {
     try {
       const user = await UserSchema.find()
-        .skip(Number(req.params.page) * 20)
-        .limit(20);
+        .skip(Number(req.params.page) * 10)
+        .limit(10);
       res.send(
-        user.map(
-          (user: any): userTypes => {
-            const { fullName, avatar, isOnline, id } = user;
-            // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
-            return {
-              fullName,
-              avatar,
-              isOnline,
-              id,
-            };
-          }
-        )
+        user.map((user: any): userTypes => {
+          const { fullName, avatar, isOnline, id } = user;
+          // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
+          return {
+            fullName,
+            avatar,
+            isOnline,
+            id,
+          };
+        })
       );
     } catch (err) {
       res.status(401).send(err);
@@ -49,31 +47,33 @@ let UsersController = {
   },
 
   loginUser: (req: express.Request, res: express.Response) => {
-    console.log(req.body)
+    console.log(req.body);
     UserSchema.findOne({
       email: req.body.values.email,
     })
       .then((user: any) => {
-        bcrypt.compare(req.body.values.password, user.password).then((result) => {
-          if (result) {
-            const accessToken = jwt.sign(
-              { email: user.email },
-              process.env.SESSION_SECRET,
-              {
-                expiresIn: process.env.JWT_MAXAGE,
-              }
-            );
-            res.header("auth-token", accessToken).send({
-              token: accessToken,
-              email: user.email,
-              fullName: user.fullName,
-              id: user._id,
-              responseCode: "success",
-            });
-          } else {
-            res.send("Username or password incorrect");
-          }
-        });
+        bcrypt
+          .compare(req.body.values.password, user.password)
+          .then((result) => {
+            if (result) {
+              const accessToken = jwt.sign(
+                { email: user.email },
+                process.env.SESSION_SECRET,
+                {
+                  expiresIn: process.env.JWT_MAXAGE,
+                }
+              );
+              res.header("auth-token", accessToken).send({
+                token: accessToken,
+                email: user.email,
+                fullName: user.fullName,
+                id: user._id,
+                responseCode: "success",
+              });
+            } else {
+              res.send("Username or password incorrect");
+            }
+          });
       })
       .catch(() => {
         res.send("Username or password incorrect");
@@ -92,12 +92,14 @@ let UsersController = {
   getMe: (req: express.Request, res: express.Response) => {
     UserSchema.findOne({
       email: req.body.email,
-    }).then((user: any) => {
-      const { email, fullName, _id: id } = user;
-      res.send({ email, fullName, id, responseCode: "success" });
-    }).catch(data => {
-      res.status(400).send({ responseCode: "User is not found" });
     })
+      .then((user: any) => {
+        const { email, fullName, _id: id } = user;
+        res.send({ email, fullName, id, responseCode: "success" });
+      })
+      .catch((data) => {
+        res.status(400).send({ responseCode: "User is not found" });
+      });
   },
 
   createUser: (req: express.Request, res: express.Response) => {
@@ -107,17 +109,18 @@ let UsersController = {
         email: req.body.email,
         fullName: req.body.name,
         password: hash,
-      }).save().then((data: Object) => {
-        console.log("created user", data);
-        res.send({ ...data, responseCode: "success" });
-        return data;
       })
+        .save()
+        .then((data: Object) => {
+          console.log("created user", data);
+          res.send({ ...data, responseCode: "success" });
+          return data;
+        })
         .catch((err: string) => {
           console.log(err);
           res.send({ responseCode: "fail" });
           return err;
         });
-
     });
   },
 

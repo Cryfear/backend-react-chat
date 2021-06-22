@@ -18,7 +18,6 @@ let DialogsController = {
   },
 
   findMyDialog: async (req: express.Request, res: express.Response) => {
-    console.log(req.params.id)
     const dialog = await Dialog.find({
       users: { $in: [req.params.id] },
     })
@@ -36,7 +35,6 @@ let DialogsController = {
     console.log(req.body.id_1, req.body.id_2);
     let user = await User.findOne({ _id: req.body.id_1 });
     let user2 = await User.findOne({ _id: req.body.id_2 });
-    console.log(req.body.id_1, req.body.id_2);
     if (user && user2) {
       let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
       if (dio === null) {
