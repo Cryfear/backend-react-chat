@@ -7,7 +7,7 @@ let DialogsController = {
   findDialog: async (req: express.Request, res: express.Response) => {
     console.log(req.params);
     const dialog = Dialog.findOne({
-      users: { $all: [req.params.id, req.params.id2] },
+      users: {$all: [req.params.id, req.params.id2]},
     }).exec((err, dialog) => {
       if (dialog) {
         res.send(dialog);
@@ -17,26 +17,25 @@ let DialogsController = {
     });
   },
 
-  findMyDialog: async (req: express.Request, res: express.Response) => {
-    const dialog = await Dialog.find({
-      users: { $in: [req.params.id] },
+  findMyDialogs: async (req: express.Request, res: express.Response) => {
+    const dialogs = await Dialog.find({
+      users: {$in: [req.params.id]},
     })
-      .exec((err, dialog) => {
-        if (dialog) {
-          res.send(dialog);
-        } else {
-          res.status(400).send("error");
-        }
-      });
-      return dialog;
+      .skip(Number(req.body.page) * 10)
+      .limit(10);
+
+    if (dialogs) {
+      return res.send(dialogs)
+    }
+    res.status(400).send("error");
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
     console.log(req.body.id_1, req.body.id_2);
-    let user = await User.findOne({ _id: req.body.id_1 });
-    let user2 = await User.findOne({ _id: req.body.id_2 });
+    let user = await User.findOne({_id: req.body.id_1});
+    let user2 = await User.findOne({_id: req.body.id_2});
     if (user && user2) {
-      let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
+      let dio = await Dialog.findOne({users: {$all: [user, user2]}});
       if (dio === null) {
         new Dialog({
           name: req.body.name,
@@ -52,7 +51,7 @@ let DialogsController = {
             res.send(err);
           });
       } else {
-        const messages = await Message.find({ dialog: dio._id });
+        const messages = await Message.find({dialog: dio._id});
         res.send(messages);
       }
     }

@@ -36,26 +36,21 @@ let MessagesController = {
   },
 
   findLastMessage: async (req: express.Request, res: express.Response) => {
-    let dialog = await Dialog.findOne({
-      users: { $all: [req.body.id2, req.body.id1] },
-    });
-    if (dialog) {
-      MessageSchema.find({ dialog: dialog.id })
+    if (req.body.id) {
+      MessageSchema.find({ dialog: req.body.id, })
         .sort("-date")
         .limit(1)
         .exec(function (err, message) {
           if (err) res.status(404).send(err);
+          console.log('success');
           res.send(message);
         });
     }
   },
 
   getUnreadMessages: async (req: express.Request, res: express.Response) => {
-    let dialog = await Dialog.findOne({
-      users: { $all: [req.body.id2, req.body.id1] },
-    });
-    if (dialog) {
-      MessageSchema.find({ dialog: dialog.id, isReaded: false }).exec(function (
+    if (req.body.id) {
+      MessageSchema.find({ dialog:req.body.id, isRead: false }).exec(function (
         err,
         message
       ) {
