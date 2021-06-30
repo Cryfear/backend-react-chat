@@ -7,18 +7,11 @@ import { CallbackError } from "mongoose";
 
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
-    let dialog = await Dialog.findOne({
-      users: { $all: [req.body.id2, req.body.id1] },
-    });
-    if (dialog) {
-      MessageSchema.find({ dialog: dialog.id })
-        .then((data: any) => {
-          res.send(data);
-        })
-        .catch((err) => {
-          res.send(err);
-        });
-    } else {
+    try {
+      MessageSchema.find({ dialog: req.body.dialogId }).then((data: any) => {
+        res.send(data);
+      });
+    } catch (err) {
       res.status(404).send("error!");
     }
   },
@@ -37,12 +30,12 @@ let MessagesController = {
 
   findLastMessage: async (req: express.Request, res: express.Response) => {
     if (req.body.id) {
-      MessageSchema.find({ dialog: req.body.id, })
+      MessageSchema.find({ dialog: req.body.id })
         .sort("-date")
         .limit(1)
         .exec(function (err, message) {
           if (err) res.status(404).send(err);
-          console.log('success');
+          console.log("success");
           res.send(message);
         });
     }
@@ -50,7 +43,7 @@ let MessagesController = {
 
   getUnreadMessages: async (req: express.Request, res: express.Response) => {
     if (req.body.id) {
-      MessageSchema.find({ dialog:req.body.id, isRead: false }).exec(function (
+      MessageSchema.find({ dialog: req.body.id, isRead: false }).exec(function (
         err,
         message
       ) {
@@ -61,14 +54,14 @@ let MessagesController = {
   },
 
   createMessage: async (req: express.Request, res: express.Response) => {
+    console.log(req.body);
     let dialog = await Dialog.findOne({
-      users: { $all: [req.body.id2, req.body.id1] },
+      _id: req.body.dialogId,
     });
     let me = await User.findOne({
-      _id: req.body.id2,
+      _id: req.body.myId,
     });
 
-    console.log(req.body.data, req.body.id1, req.body.id2);
     if (dialog && me) {
       new MessageSchema({
         date: new Date(),
