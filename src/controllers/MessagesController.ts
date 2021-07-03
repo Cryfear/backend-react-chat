@@ -7,13 +7,14 @@ import { CallbackError } from "mongoose";
 
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
-    try {
-      MessageSchema.find({ dialog: req.body.dialogId }).then((data: any) => {
-        res.send(data);
+    console.log(req.body.dialogId, req.body.page)
+    MessageSchema.find({ dialog: req.body.dialogId })
+      .skip(Number(req.body.page) * 10)
+      .limit(10)
+      .then((data) => res.send(data))
+      .catch((err: any) => {
+        res.status(404).send("error!");
       });
-    } catch (err) {
-      res.status(404).send("error!");
-    }
   },
 
   findMessage: (req: express.Request, res: express.Response) => {
