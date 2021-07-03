@@ -5,9 +5,8 @@ import express from "express";
 
 let DialogsController = {
   findDialog: async (req: express.Request, res: express.Response) => {
-    console.log(req.params);
     const dialog = Dialog.findOne({
-      users: {$all: [req.params.id, req.params.id2]},
+      users: { $all: [req.params.id, req.params.id2] },
     }).exec((err, dialog) => {
       if (dialog) {
         res.send(dialog);
@@ -19,23 +18,22 @@ let DialogsController = {
 
   findMyDialogs: async (req: express.Request, res: express.Response) => {
     const dialogs = await Dialog.find({
-      users: {$in: [req.params.id]},
+      users: { $in: [req.params.id] },
     })
       .skip(Number(req.body.page) * 10)
       .limit(10);
 
     if (dialogs) {
-      return res.send(dialogs)
+      return res.send(dialogs);
     }
     res.status(400).send("error");
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
-    console.log(req.body.id_1, req.body.id_2);
-    let user = await User.findOne({_id: req.body.id_1});
-    let user2 = await User.findOne({_id: req.body.id_2});
+    let user = await User.findOne({ _id: req.body.id_1 });
+    let user2 = await User.findOne({ _id: req.body.id_2 });
     if (user && user2) {
-      let dio = await Dialog.findOne({users: {$all: [user, user2]}});
+      let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
       if (dio === null) {
         new Dialog({
           name: req.body.name,
@@ -44,14 +42,14 @@ let DialogsController = {
           .populate("users")
           .execPopulate()
           .then((data) => {
-            res.send("success");
+            res.send(data._id);
             data.save();
           })
           .catch((err) => {
-            res.send(err);
+            console.log('unsuccesful create dialog');
           });
       } else {
-        const messages = await Message.find({dialog: dio._id});
+        const messages = await Message.find({ dialog: dio._id });
         res.send(messages);
       }
     }
@@ -77,17 +75,14 @@ let DialogsController = {
     );
   },
 
-  deleteDialog: (req: express.Request, res: express.Response) => {
-    Dialog.deleteOne(
-      {
-        _id: req.params.id,
-      },
-      undefined,
-      (err: any) => {
-        if (err) return console.log(err);
-        res.send(err);
-      }
-    );
+  deleteDialog: async (req: express.Request, res: express.Response) => {
+    try {
+      const dialog = await Dialog.deleteOne({ _id: req.params.id }).then(
+        (data) => res.send(data)
+      );
+    } catch (err) {
+      console.log("deleted wasnt successful.");
+    }
   },
 };
 

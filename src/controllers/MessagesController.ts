@@ -7,12 +7,11 @@ import { CallbackError } from "mongoose";
 
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
-    console.log(req.body.dialogId, req.body.page)
     MessageSchema.find({ dialog: req.body.dialogId })
       .skip(Number(req.body.page) * 10)
       .limit(10)
       .then((data) => res.send(data))
-      .catch((err: any) => {
+      .catch(() => {
         res.status(404).send("error!");
       });
   },
@@ -34,28 +33,39 @@ let MessagesController = {
       MessageSchema.find({ dialog: req.body.id })
         .sort("-date")
         .limit(1)
-        .exec(function (err, message) {
-          if (err) res.status(404).send(err);
-          console.log("success");
-          res.send(message);
+        .then((message: any) => {
+          try {
+            res.send({ text: message[0].data, date: message[0].date });
+          } 
+          catch (err) {
+            res.status(404).send(err);
+          }
         });
     }
   },
 
   getUnreadMessages: async (req: express.Request, res: express.Response) => {
-    if (req.body.id) {
-      MessageSchema.find({ dialog: req.body.id, isRead: false }).exec(function (
-        err,
-        message
-      ) {
-        if (err) res.status(404).send(err);
-        res.send(message);
-      });
+    if (req.body.dialogId) {
+      MessageSchema.find({
+        dialog: req.body.dialogId,
+        creater: req.body.userId,
+        isReaded: false,
+      })
+        .then((message: any) => {
+          try {
+            res.send({ length: message.length });
+          } catch (err) {
+            console.log('bad getunreadmessages');
+            res.status(404).send(err);
+          }
+        })
+        .catch((err) => {
+          if (err) res.status(404).send(err);
+        });
     }
   },
 
   createMessage: async (req: express.Request, res: express.Response) => {
-    console.log(req.body);
     let dialog = await Dialog.findOne({
       _id: req.body.dialogId,
     });
