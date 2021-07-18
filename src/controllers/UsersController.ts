@@ -13,34 +13,60 @@ interface userTypes {
 let UsersController = {
   getUsers: async (req: express.Request, res: express.Response) => {
     try {
-      const user = await UserSchema.find()
+      const users = await UserSchema.find()
         .skip(Number(req.params.page) * 10)
         .limit(10);
-      res.send(
-        user.map((user: any): userTypes => {
-          const { fullName, avatar, isOnline, id } = user;
-          // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
-          return {
-            fullName,
-            avatar,
-            isOnline,
-            id,
-          };
-        })
-      );
+
+      const mapedUsers = users.map((user: any): userTypes => {
+        const {fullName, avatar, isOnline, id} = user;
+        // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
+        return {
+          fullName,
+          avatar,
+          isOnline,
+          id,
+        };
+      })
+
+      res.send(mapedUsers);
     } catch (err) {
       res.status(401).send(err);
     }
   },
 
+  getUsersByName: (req: express.Request, res: express.Response) => {
+    try {
+      UserSchema.find({fullName: {'$regex': req.params.name, $options: 'i'}})
+        .skip(Number(req.params.page) * 10)
+        .limit(10)
+        .exec((err, users) => {
+          if(err) res.send('fail');
+          const usersBySearch = users.map((user: any): userTypes => {
+            const {fullName, avatar, isOnline, id} = user;
+            // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
+            return {
+              fullName,
+              avatar,
+              isOnline,
+              id,
+            };
+          });
+
+          res.send(usersBySearch);
+        });
+    } catch (err) {
+      res.status(401).send('fail');
+    }
+  },
+
   findUser: async (req: express.Request, res: express.Response) => {
     try {
-      const user: any = await UserSchema.findOne({ _id: req.params.id });
-      const { fullName, avatar, isOnline, id } = user;
+      const user: any = await UserSchema.findOne({_id: req.params.id});
+      const {fullName, avatar, isOnline, id} = user;
 
       // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
 
-      res.send({ fullName, avatar, isOnline, id });
+      res.send({fullName, avatar, isOnline, id});
     } catch (err) {
       res.status(404).send(err);
     }
@@ -56,7 +82,7 @@ let UsersController = {
           .then((result) => {
             if (result) {
               const accessToken = jwt.sign(
-                { email: user.email },
+                {email: user.email},
                 process.env.SESSION_SECRET,
                 {
                   expiresIn: process.env.JWT_MAXAGE,
@@ -93,11 +119,11 @@ let UsersController = {
       email: req.body.email,
     })
       .then((user: any) => {
-        const { email, fullName, _id: id } = user;
-        res.send({ email, fullName, id, responseCode: "success" });
+        const {email, fullName, _id: id} = user;
+        res.send({email, fullName, id, responseCode: "success"});
       })
       .catch((data) => {
-        res.status(400).send({ responseCode: "User is not found" });
+        res.status(400).send({responseCode: "User is not found"});
       });
   },
 
@@ -110,11 +136,11 @@ let UsersController = {
       })
         .save()
         .then((data: Object) => {
-          res.send({ ...data, responseCode: "success" });
+          res.send({...data, responseCode: "success"});
           return data;
         })
         .catch((err: string) => {
-          res.send({ responseCode: "fail" });
+          res.send({responseCode: "fail"});
           return err;
         });
     });
