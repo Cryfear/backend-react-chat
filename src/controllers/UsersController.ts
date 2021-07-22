@@ -44,7 +44,7 @@ let UsersController = {
           const usersBySearch = users.map((user: any): userTypes => {
             const {fullName, avatar, isOnline, id} = user;
             // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
-            return {
+            return { 
               fullName,
               avatar,
               isOnline,
@@ -122,8 +122,8 @@ let UsersController = {
         const {email, fullName, _id: id} = user;
         res.send({email, fullName, id, responseCode: "success"});
       })
-      .catch((data) => {
-        res.status(400).send({responseCode: "User is not found"});
+      .catch(() => {
+        res.send({responseCode: "Not logged in"});
       });
   },
 

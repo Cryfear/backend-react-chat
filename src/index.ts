@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import * as dotenv from "dotenv";
-import createSocket from "./core/socket";
+import {createSocket} from "./core/socket";
 import session from "express-session";
 import { corsFunction, corsSettings } from "./core/cors";
 import authRouter from "./routes/auth";
@@ -11,9 +11,9 @@ import usersRouter from "./routes/users";
 
 const app = express();
 const cors = require('cors');
-const http = require("http").createServer(app);
+const server = require("http").createServer(app);
 
-export const io = createSocket(http);
+export const io = createSocket(server);
 
 dotenv.config();
 
@@ -65,7 +65,7 @@ mongoose.connect(
     useFindAndModify: false
   },
   () => {
-    http.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log(`We are live on ${process.env.PORT}`);
     });
   }
