@@ -7,7 +7,7 @@ let DialogsController = {
   findDialog: async (req: express.Request, res: express.Response) => {
     const dialog = Dialog.findOne({
       users: { $all: [req.params.id, req.params.id2] },
-    }).exec((err, dialog) => {
+    }).exec((err: any, dialog: any) => {
       if (dialog) {
         res.send(dialog);
       } else {
@@ -41,11 +41,11 @@ let DialogsController = {
         })
           .populate("users")
           .execPopulate()
-          .then((data) => {
+          .then((data: any) => {
             res.send(data._id);
             data.save();
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.log('unsuccesful create dialog');
           });
       } else {
@@ -78,7 +78,7 @@ let DialogsController = {
   deleteDialog: async (req: express.Request, res: express.Response) => {
     try {
       const dialog = await Dialog.deleteOne({ _id: req.params.id }).then(
-        (data) => res.send(data)
+        (data: any) => res.send(data)
       );
     } catch (err) {
       console.log("deleted wasnt successful.");

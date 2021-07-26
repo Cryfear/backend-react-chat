@@ -1,22 +1,16 @@
-import socket, { Socket } from "socket.io";
+import { io } from "..";
 
-export const createSocket = (http: Socket) => {
-  const io = socket(http);
-
+export const socketInitialization = () => {
+  const users: any = {};
   io.on("connection", (socket: any) => {
+    users[socket.id] = socket;
 
-    console.log("socket connected");
-
-    socket.on("disconnect", () => {
-      console.log("user disconnected");
-    });
-    socket.on("DIALOGS:JOIN", (msg: any) => {
-      console.log(msg, "here");
-    });
-
-    
-
+    socket.on('send-id', function(id: number) {
+      users[id] = socket;
   });
-
-  return io;
+    
+    socket.on("qqq", ({ content, to }: any) => {
+      users[to] ? users[to].emit("private", {content, to}): null;
+    });
+  });
 };

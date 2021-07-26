@@ -8,9 +8,10 @@ import { CallbackError } from "mongoose";
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
     MessageSchema.find({ dialog: req.body.dialogId })
+      .sort("-date")
       .skip(Number(req.body.page) * 10)
       .limit(10)
-      .then((data) => res.send(data))
+      .then((data: any) => res.send(data))
       .catch(() => {
         res.status(404).send("error!");
       });
@@ -36,8 +37,7 @@ let MessagesController = {
         .then((message: any) => {
           try {
             res.send({ text: message[0].data, date: message[0].date });
-          } 
-          catch (err) {
+          } catch (err) {
             res.status(404).send(err);
           }
         });
@@ -55,11 +55,11 @@ let MessagesController = {
           try {
             res.send({ length: message.length });
           } catch (err) {
-            console.log('bad getunreadmessages');
+            console.log("bad getunreadmessages");
             res.status(404).send(err);
           }
         })
-        .catch((err) => {
+        .catch((err: any) => {
           if (err) res.status(404).send(err);
         });
     }
@@ -84,13 +84,13 @@ let MessagesController = {
       })
         .populate("dialog")
         .execPopulate()
-        .then((data) => {
+        .then((data: any) => {
           io.emit("qqq", data);
 
           res.send(data);
           data.save();
         })
-        .catch((err) => {
+        .catch((err: any) => {
           res.status(404).send(err);
         });
     }

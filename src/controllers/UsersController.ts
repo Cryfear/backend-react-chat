@@ -39,7 +39,7 @@ let UsersController = {
       UserSchema.find({fullName: {'$regex': req.params.name, $options: 'i'}})
         .skip(Number(req.params.page) * 10)
         .limit(10)
-        .exec((err, users) => {
+        .exec((err: any, users: any) => {
           if(err) res.send('fail');
           const usersBySearch = users.map((user: any): userTypes => {
             const {fullName, avatar, isOnline, id} = user;
@@ -128,7 +128,7 @@ let UsersController = {
   },
 
   createUser: (req: express.Request, res: express.Response) => {
-    bcrypt.hash(req.body.password, 4, (_: Error, hash: string) => {
+    bcrypt.hash(req.body.password, 4, (_, hash) => {
       new UserSchema({
         email: req.body.email,
         fullName: req.body.name,
@@ -144,28 +144,6 @@ let UsersController = {
           return err;
         });
     });
-  },
-
-  updateUser: (req: express.Request, res: express.Response) => {
-    const updateUser = {
-      avatar: req.body.avatar,
-      fullName: req.body.fullName,
-      password: req.body.password,
-    };
-    UserSchema.findOneAndUpdate(
-      {
-        _id: req.params.id,
-      },
-      updateUser,
-      {
-        new: true,
-      },
-      (err: Error, user) => {
-        if (err) return res.send(err);
-        res.send(user);
-        console.log("user updated");
-      }
-    );
   },
 
   deleteUser: (req: express.Request, res: express.Response) => {
