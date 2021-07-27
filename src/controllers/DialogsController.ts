@@ -5,28 +5,27 @@ import express from "express";
 
 let DialogsController = {
   findDialog: async (req: express.Request, res: express.Response) => {
-    const dialog = Dialog.findOne({
+    Dialog.findOne({
       users: { $all: [req.params.id, req.params.id2] },
-    }).exec((err: any, dialog: any) => {
+    }).exec((_: any, dialog: any) => {
       if (dialog) {
         res.send(dialog);
       } else {
-        res.status(400).send("error");
+        res.status(404).send("error");
       }
     });
   },
 
   findMyDialogs: async (req: express.Request, res: express.Response) => {
-    const dialogs = await Dialog.find({
+    Dialog.find({
       users: { $in: [req.params.id] },
     })
       .skip(Number(req.body.page) * 10)
-      .limit(10);
-
-    if (dialogs) {
-      return res.send(dialogs);
-    }
-    res.status(400).send("error");
+      .limit(10)
+      .then((dialogs: Object) => {
+        res.send(dialogs);
+      })
+      .catch((err: Error) => res.status(400).send("error"));
   },
 
   createDialog: async (req: express.Request, res: express.Response) => {
@@ -46,7 +45,7 @@ let DialogsController = {
             data.save();
           })
           .catch((err: any) => {
-            console.log('unsuccesful create dialog');
+            console.log("unsuccesful create dialog");
           });
       } else {
         const messages = await Message.find({ dialog: dio._id });
