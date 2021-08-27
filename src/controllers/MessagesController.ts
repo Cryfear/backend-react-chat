@@ -7,7 +7,12 @@ import { CallbackError } from "mongoose";
 
 let MessagesController = {
   findDialogMessages: async (req: express.Request, res: express.Response) => {
-    MessageSchema.find({ dialog: req.body.dialogId })
+    MessageSchema.find({
+      $or: [
+        { dialog: req.body.dialogId, isReaded: true },
+        { dialog: req.body.dialogId, creater: req.body.myId },
+      ],
+    })
       .sort("-date")
       .skip(Number(req.body.page) * 10)
       .limit(10)
@@ -51,11 +56,36 @@ let MessagesController = {
         creater: req.body.userId,
         isReaded: false,
       })
+        .limit(100)
         .then((message: any) => {
           try {
             res.send({ length: message.length });
           } catch (err) {
-            console.log("bad getunreadmessages");
+            res.status(404).send(err);
+          }
+        })
+        .catch((err: any) => {
+          if (err) res.status(404).send(err);
+        });
+    }
+  },
+
+  getUnreadMessagesWithData: async (
+    req: express.Request,
+    res: express.Response
+  ) => {
+    if (req.body.dialogId) {
+      MessageSchema.find({
+        dialog: req.body.dialogId,
+        creater: req.body.userId,
+        isReaded: false,
+      })
+        .skip(Number(req.body.unreadedPage) * 10)
+        .limit(10)
+        .then((messages: any) => {
+          try {
+            res.send(messages);
+          } catch (err) {
             res.status(404).send(err);
           }
         })
@@ -73,6 +103,9 @@ let MessagesController = {
       _id: req.body.myId,
     });
 
+    const opponent =
+      dialog.users[0]._id == req.body.myId ? dialog.users[1] : dialog.users[0];
+
     if (dialog && me) {
       new MessageSchema({
         date: new Date(),
@@ -86,6 +119,16 @@ let MessagesController = {
         .execPopulate()
         .then((data: any) => {
           io.emit("qqq", data);
+
+          MessageSchema.updateMany(
+            {
+              dialog: dialog._id,
+              creater: opponent._id,
+            },
+            { $set: { isReaded: true } },
+            {},
+            (err: any, writeResult: any) => {}
+          );
 
           res.send(data);
           data.save();
