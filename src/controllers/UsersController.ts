@@ -93,6 +93,7 @@ let UsersController = {
                 email: user.email,
                 fullName: user.fullName,
                 id: user._id,
+                avatar: user.avatar,
                 responseCode: "success",
               });
             } else {

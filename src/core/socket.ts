@@ -3,7 +3,6 @@ import { io } from "..";
 export const socketInitialization = () => {
   const users: any = {};
   io.on("connection", (socket: any) => {
-    console.log('connected');
     
     users[socket.id] = socket;
 
@@ -16,7 +15,6 @@ export const socketInitialization = () => {
     });
 
     socket.on('disconnect', () => {
-      console.log('disconnected')
     })
   });
 };

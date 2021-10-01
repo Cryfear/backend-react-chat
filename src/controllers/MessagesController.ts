@@ -56,7 +56,7 @@ let MessagesController = {
         creater: req.body.userId,
         isReaded: false,
       })
-        .limit(100)
+        .limit(10)
         .then((message: any) => {
           try {
             res.send({ length: message.length });
@@ -80,6 +80,7 @@ let MessagesController = {
         creater: req.body.userId,
         isReaded: false,
       })
+        .sort([["date", 1]])
         .skip(Number(req.body.unreadedPage) * 10)
         .limit(10)
         .then((messages: any) => {
