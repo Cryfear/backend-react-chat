@@ -56,10 +56,10 @@ let MessagesController = {
         creater: req.body.userId,
         isReaded: false,
       })
-        .limit(10)
-        .then((message: any) => {
+        .limit(100)
+        .then((messages: any) => {
           try {
-            res.send({ length: message.length });
+            res.status(200).send({ length: messages.length });
           } catch (err) {
             res.status(404).send(err);
           }
