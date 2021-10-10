@@ -10,6 +10,8 @@ import usersRouter from "./routes/users";
 import { socketInitialization } from "./core/socket";
 import MongoStore from "connect-mongo";
 
+const fileUpload = require("express-fileupload");
+
 const app = express();
 const cors = require("cors");
 const server = require("http").createServer(app);
@@ -49,15 +51,17 @@ app.use(
     cookie: { secure: true },
     store: MongoStore.create({
       mongoUrl: process.env.DATABASE_URL,
-      ttl: 14 * 24 * 60 * 60 // save session for 14 days
-  }),
+      ttl: 14 * 24 * 60 * 60, // save session for 14 days
+    }),
   })
 );
 
 // parsing
 
+app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload());
 
 // cors
 

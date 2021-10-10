@@ -12,9 +12,12 @@ const UserSchema = new Schema(
       max: 255,
     },
     avatar: {
-      type: String,
-      default:
-        "https://c7.uihere.com/files/833/38/538/user-profile-computer-software-internet-bot-user.jpg",
+      type: String, 
+      default: 'https://www.kindpng.com/picc/m/24-248528_internet-user-png-person-in-charge-icon-transparent.png'
+    },
+    isDefaultAvatar: {
+      type: Boolean,
+      default: true
     },
     fullName: {
       type: String,
