@@ -187,7 +187,6 @@ let UsersController = {
     if (req.session) {
       req.session.destroy(() => {
         res.send("destroyed");
-        console.log("logout");
       });
     }
   },
