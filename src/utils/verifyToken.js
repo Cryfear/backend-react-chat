@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
-import express, { NextFunction } from "express";
 
-export function verifyToken(req: any, res: express.Response, next: NextFunction) {
+export function verifyToken(req, res, next) {
   const token = req.header("auth-token");
 
   if (!token) return res.send({responseCode: "Access Denied"});

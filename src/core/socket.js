@@ -1,12 +1,12 @@
-import { Socket } from "socket.io";
-import { io } from "..";
+import { io } from "../index.js";
 
 export const socketInitialization = () => {
-  let users: any = {};
-  io.on("connection", (socket: Socket) => {
+  let users = {};
+  io.on("connection", (socket) => {
     users[socket.id] = socket;
 
-    socket.on('send-id', function(id: number) {
+    socket.on('send-id', function(id) {
+      console.log('yes')
       users[id] = socket;
   });
     

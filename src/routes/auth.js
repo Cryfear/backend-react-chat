@@ -1,7 +1,7 @@
 import router from "express";
-import UsersController from "../controllers/UsersController";
-import onlineChanger from "../utils/onlineChanger";
-import { verifyToken } from "../utils/verifyToken";
+import UsersController from "../controllers/UsersController.js";
+import onlineChanger from "../utils/onlineChanger.js";
+import { verifyToken } from "../utils/verifyToken.js";
 
 const routs = router.Router();
 

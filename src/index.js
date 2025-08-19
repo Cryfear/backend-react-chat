@@ -1,16 +1,21 @@
 import express from "express";
-import mongoose from "mongoose";
 import * as dotenv from "dotenv";
 import session from "express-session";
-import { corsFunction, corsSettings } from "./core/cors";
-import authRouter from "./routes/auth";
-import dialogsRouter from "./routes/dialogs";
-import messagesRouter from "./routes/messages";
-import usersRouter from "./routes/users";
-import { socketInitialization } from "./core/socket";
+import { corsFunction, corsSettings } from "./core/cors.js";
+import authRouter from "./routes/auth.js";
+import dialogsRouter from "./routes/dialogs.js";
+import messagesRouter from "./routes/messages.js";
+import usersRouter from "./routes/users.js";
+import { socketInitialization } from "./core/socket.js";
 import MongoStore from "connect-mongo";
+import { createRequire } from "module";
+import UserSchema from "./models/User.js";
+import mongoose from "mongoose";
+
+const require = createRequire(import.meta.url);
 
 const fileUpload = require("express-fileupload");
+
 
 const app = express();
 const cors = require("cors");
@@ -29,17 +34,6 @@ export const io = require("socket.io")(server, {
 socketInitialization();
 
 dotenv.config();
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      DATABASE_URL: string;
-      NODE_ENV: "development" | "production";
-      PORT?: string;
-      SESSION_SECRET: string;
-    }
-  }
-}
 
 // express session
 
@@ -77,17 +71,27 @@ app.use("/", usersRouter);
 
 // connecting
 
-mongoose.connect(
-  process.env.DATABASE_URL,
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  },
-  () => {
-    server.listen(process.env.PORT, () => {
-      console.log(`We are live on ${process.env.PORT}`);
-    });
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://govnoepta:12345@cluster0.qsis8na.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+app.get("/", (req, res) => {
+  res.json({ message: "API работает!" });
+});
+
+
+async function startServer() {
+  try {
+    await mongoose.connect(uri);
+    console.log("✅ Connected to MongoDB via Mongoose");
+
+    server.listen(8888, () =>
+      console.log("API сервер работает на http://localhost:8888")
+    );
+  } catch (err) {
+    console.error("Ошибка подключения:", err);
   }
-);
+}
+
+startServer();
+
+

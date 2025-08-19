@@ -1,24 +1,15 @@
-import UserSchema from "../models/User";
+import UserSchema from "../models/User.js";
 import bcrypt from "bcrypt";
-import express from "express";
 import jwt from "jsonwebtoken";
-import { UploadedFile } from "express-fileupload";
-
-interface userTypes {
-  fullName: string;
-  avatar: string;
-  isOnline: boolean;
-  id: string;
-}
 
 let UsersController = {
-  getUsers: async (req: express.Request, res: express.Response) => {
+  getUsers: async (req, res) => {
     try {
       const users = await UserSchema.find()
         .skip(Number(req.params.page) * 10)
         .limit(10);
 
-      const mapedUsers = users.map((user: any): userTypes => {
+      const mapedUsers = users.map((user) => {
         const { fullName, isOnline, id } = user;
         // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
         return {
@@ -37,14 +28,14 @@ let UsersController = {
     }
   },
 
-  getUsersByName: (req: express.Request, res: express.Response) => {
+  getUsersByName: (req, res) => {
     try {
       UserSchema.find({ fullName: { $regex: req.params.name, $options: "i" } })
         .skip(Number(req.params.page) * 10)
         .limit(10)
-        .exec((err: any, users: any) => {
+        .exec((err, users) => {
           if (err) res.send("fail");
-          const usersBySearch = users.map((user: any): userTypes => {
+          const usersBySearch = users.map((user) => {
             const { fullName, isOnline, id } = user;
             // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
             return {
@@ -64,9 +55,9 @@ let UsersController = {
     }
   },
 
-  findUser: async (req: express.Request, res: express.Response) => {
+  findUser: async (req, res) => {
     try {
-      const user: any = await UserSchema.findOne({ _id: req.params.id });
+      const user = await UserSchema.findOne({ _id: req.params.id });
       const { fullName, isOnline, id } = user;
 
       const avatar = user.isDefaultAvatar
@@ -81,12 +72,12 @@ let UsersController = {
     }
   },
 
-  changeUserName: async (req: express.Request, res: express.Response) => {
+  changeUserName: async (req, res) => {
     if(req.body.newNickName) {
       try {
         UserSchema.findOne({
           email: req.body.email,
-        }).then((user: any) => {
+        }).then((user) => {
           user.fullName = req.body.newNickName;
           user.save();
           res.status(200).send({responseCode: "success"});
@@ -98,22 +89,22 @@ let UsersController = {
     else res.status(400).send("Username weren't change")
   },
 
-  uploadAvatar: (req: express.Request, res: express.Response) => {
+  uploadAvatar: (req, res) => {
     if (!req.files) {
       return res.status(500).send({ msg: "file is not found" });
     }
 
-    const myFile = req.files.file as UploadedFile;
+    const myFile = req.files.file;
 
     if (/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(myFile.name)) {
-      myFile.mv(`${__dirname}../../../public/${myFile.name}`, function (err: Error) {
+      myFile.mv(`${__dirname}../../../public/${myFile.name}`, function (err) {
         if (err) {
           return res.status(500).send({ msg: "something wrong" });
         }
 
         UserSchema.findOne({
           email: req.header("email"),
-        }).then((user: any) => {
+        }).then((user) => {
           user.avatar = myFile.name;
           user.isDefaultAvatar = false;
           user.save();
@@ -130,11 +121,11 @@ let UsersController = {
     }
   },
 
-  changeUserPassword: (req: express.Request, res: express.Response) => {
+  changeUserPassword: (req, res) => {
     try {
       UserSchema.findOne({
         email: req.body.email,
-      }).then((user: any) => {
+      }).then((user) => {
         bcrypt.compare(req.body.oldPassword, user.password).then((result) => {
           if (result) {
             bcrypt.hash(req.body.newPassword, 4, (_, hash) => {
@@ -153,11 +144,12 @@ let UsersController = {
     }
   },
 
-  loginUser: (req: express.Request, res: express.Response) => {
+  loginUser: (req, res) => {
+    console.log('req.body');
     UserSchema.findOne({
       email: req.body.values.email,
     })
-      .then((user: any) => {
+      .then((user) => {
         bcrypt.compare(req.body.values.password, user.password).then((result) => {
           if (result) {
             const accessToken = jwt.sign({ email: user.email }, process.env.SESSION_SECRET, {
@@ -183,7 +175,7 @@ let UsersController = {
       });
   },
 
-  logoutUser: (req: express.Request, res: express.Response) => {
+  logoutUser: (req, res) => {
     if (req.session) {
       req.session.destroy(() => {
         res.send("destroyed");
@@ -191,11 +183,13 @@ let UsersController = {
     }
   },
 
-  getMe: (req: express.Request, res: express.Response) => {
-    UserSchema.findOne({
-      email: req.body.email,
+  getMe: (req, res) => {
+    console.log(process.env.SESSION_SECRET);
+    if(req.body) {
+      UserSchema.findOne({
+        email: req.body.email
     })
-      .then((user: any) => {
+      .then((user) => {
         const { email, fullName, isOnline, _id: id } = user;
         res.send({
           email,
@@ -211,9 +205,14 @@ let UsersController = {
       .catch(() => {
         res.send({ responseCode: "Not logged in" });
       });
+    } else {
+      res.send({ responseCode: "Not logged in" });
+    }
+    
   },
 
-  createUser: (req: express.Request, res: express.Response) => {
+  createUser: (req, res) => {
+    console.log(req.body);
     bcrypt.hash(req.body.password, 4, (_, hash) => {
       new UserSchema({
         email: req.body.email,
@@ -221,18 +220,21 @@ let UsersController = {
         password: hash,
       })
         .save()
-        .then((data: Object) => {
+        .then((data) => {
+          console.log('created');
           res.send({ ...data, responseCode: "success" });
           return data;
         })
-        .catch((err: string) => {
+        .catch((err) => {
+          console.log('wtf');
           res.send({ responseCode: "fail" });
+          console.log(err);
           return err;
         });
     });
   },
 
-  deleteUser: (req: express.Request, res: express.Response) => {
+  deleteUser: (req, res) => {
     UserSchema.deleteOne(
       {
         _id: req.params.id,

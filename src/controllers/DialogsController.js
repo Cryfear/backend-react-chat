@@ -1,13 +1,12 @@
-import Dialog from "../models/Dialog";
-import Message from "../models/Message";
-import User from "../models/User";
-import express from "express";
+import Dialog from "../models/Dialog.js";
+import Message from "../models/Message.js";
+import User from "../models/User.js";
 
 let DialogsController = {
-  findDialog: async (req: express.Request, res: express.Response) => {
+  findDialog: async (req, res) => {
     Dialog.findOne({
       users: { $all: [req.params.id, req.params.id2] },
-    }).exec((_: any, dialog: any) => {
+    }).exec((_, dialog) => {
       if (dialog) {
         res.send(dialog);
       } else {
@@ -16,19 +15,19 @@ let DialogsController = {
     });
   },
 
-  findMyDialogs: async (req: express.Request, res: express.Response) => {
+  findMyDialogs: async (req, res) => {
     Dialog.find({
       users: { $in: [req.params.id] },
     })
       .skip(Number(req.body.page) * 10)
       .limit(10)
-      .then((dialogs: Object) => {
+      .then((dialogs) => {
         res.send(dialogs);
       })
-      .catch((err: Error) => res.status(400).send("error"));
+      .catch((err) => res.status(400).send("error"));
   },
 
-  createDialog: async (req: express.Request, res: express.Response) => {
+  createDialog: async (req, res) => {
     let user = await User.findOne({ _id: req.body.id_1 });
     let user2 = await User.findOne({ _id: req.body.id_2 });
     if (user && user2) {
@@ -40,11 +39,11 @@ let DialogsController = {
         })
           .populate("users")
           .execPopulate()
-          .then((data: any) => {
+          .then((data) => {
             res.send(data._id);
             data.save();
           })
-          .catch((err: any) => {
+          .catch((err) => {
             console.log("unsuccesful create dialog");
           });
       } else {
@@ -54,7 +53,7 @@ let DialogsController = {
     }
   },
 
-  updateDialog: async (req: express.Request, res: express.Response) => {
+  updateDialog: async (req, res) => {
     const updateDialog = {
       avatar: req.body.avatar,
       fullName: req.body.fullName,
@@ -74,10 +73,10 @@ let DialogsController = {
     );
   },
 
-  deleteDialog: async (req: express.Request, res: express.Response) => {
+  deleteDialog: async (req, res) => {
     try {
       const dialog = await Dialog.deleteOne({ _id: req.params.id }).then(
-        (data: any) => res.send(data)
+        (data) => res.send(data)
       );
     } catch (err) {
       console.log("deleted wasnt successful.");

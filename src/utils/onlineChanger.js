@@ -1,20 +1,14 @@
 import express from "express";
-import User from "../models/User";
+import User from "../models/User.js";
 
-type userTYPer = {
-  isOnline: boolean;
-  last_seen: any,
-  save: Function;
-}
-
-export default (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export default (req, res, next) => {
   const userId = req.header("id");
 
   if (userId) {
     try {
       User.findOne({
         _id: userId,
-      }).then((user: userTYPer) => {
+      }).then((user) => {
         user.isOnline = true;
         user.last_seen = new Date();
         user.save();

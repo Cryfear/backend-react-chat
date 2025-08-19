@@ -1,6 +1,6 @@
 import router from "express";
-import MessagesController from "../controllers/MessagesController";
-import onlineChanger from "../utils/onlineChanger";
+import MessagesController from "../controllers/MessagesController.js";
+import onlineChanger from "../utils/onlineChanger.js";
 
 const routs = router.Router();
 
