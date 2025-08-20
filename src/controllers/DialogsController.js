@@ -8,6 +8,7 @@ let DialogsController = {
       users: { $all: [req.params.id, req.params.id2] },
     }).exec((_, dialog) => {
       if (dialog) {
+        console.log(dialog._id.toString(), 'dada dengiu');
         res.send(dialog);
       } else {
         res.status(404).send("error");
@@ -28,27 +29,35 @@ let DialogsController = {
   },
 
   createDialog: async (req, res) => {
-    let user = await User.findOne({ _id: req.body.id_1 });
-    let user2 = await User.findOne({ _id: req.body.id_2 });
+    let user = await User.findOne({ _id: req.body.id_1.id1 });
+    let user2 = await User.findOne({ _id: req.body.id_1.id2 });
+    console.log ('we are there')
     if (user && user2) {
       let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
-      if (dio === null) {
+      console.log(dio);
+      if (!dio) {
+        console.log ('we are here')
         new Dialog({
           name: req.body.name,
           users: [user._id, user2._id],
         })
           .populate("users")
-          .execPopulate()
           .then((data) => {
             res.send(data._id);
+            console.log(data, 'dialog data');
             data.save();
+            return data;
           })
           .catch((err) => {
             console.log("unsuccesful create dialog");
           });
       } else {
-        const messages = await Message.find({ dialog: dio._id });
-        res.send(messages);
+        if(dio._id) {
+          console.log('mi zdez');
+          const messages = await Message.find({ dialog: dio._id });
+          res.send({messages, dialogId: dio._id});
+        }
+        
       }
     }
   },

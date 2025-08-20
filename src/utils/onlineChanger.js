@@ -1,10 +1,12 @@
-import express from "express";
 import User from "../models/User.js";
 
 export default (req, res, next) => {
   const userId = req.header("id");
+  
+  if(userId == 'null') return res.send({responseCode: "Invalid Token"});
+  
 
-  if (userId) {
+  if (userId !== 'null') {
     try {
       User.findOne({
         _id: userId,
@@ -19,7 +21,7 @@ export default (req, res, next) => {
         }, 50000);
       });
     } catch (err) {
-      
+      res.send({responseCode: "Something wrong with onlineChanger"});
     }
   } 
   next();

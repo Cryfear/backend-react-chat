@@ -184,7 +184,7 @@ let UsersController = {
   },
 
   getMe: (req, res) => {
-    console.log(process.env.SESSION_SECRET);
+    console.log(req.body);
     if(req.body) {
       UserSchema.findOne({
         email: req.body.email
