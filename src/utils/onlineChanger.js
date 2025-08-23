@@ -3,10 +3,7 @@ import User from "../models/User.js";
 export default (req, res, next) => {
   const userId = req.header("id");
   
-  if(userId == 'null') return res.send({responseCode: "Invalid Token"});
-  
-
-  if (userId !== 'null') {
+  if (userId) {
     try {
       User.findOne({
         _id: userId,

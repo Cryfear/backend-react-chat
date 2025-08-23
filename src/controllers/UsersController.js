@@ -145,7 +145,7 @@ let UsersController = {
   },
 
   loginUser: (req, res) => {
-    console.log('req.body');
+    console.log(req.body);
     UserSchema.findOne({
       email: req.body.values.email,
     })
@@ -184,7 +184,6 @@ let UsersController = {
   },
 
   getMe: (req, res) => {
-    console.log(req.body);
     if(req.body) {
       UserSchema.findOne({
         email: req.body.email
