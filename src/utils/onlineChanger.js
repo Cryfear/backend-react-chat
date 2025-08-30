@@ -3,7 +3,7 @@ import User from "../models/User.js";
 export default (req, res, next) => {
   const userId = req.header("id");
   
-  if (userId) {
+  if (userId && userId !== 'null') {
     try {
       User.findOne({
         _id: userId,

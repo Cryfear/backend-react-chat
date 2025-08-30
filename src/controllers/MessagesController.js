@@ -96,18 +96,16 @@ let MessagesController = {
   },
 
   createMessage: async (req, res) => {
-    console.log(req.body, 'message data', req.body.dialogId);
     let dialog = await Dialog.findOne({
       _id: req.body.dialogId,
     });
     let me = await User.findOne({
       _id: req.body.myId,
     });
-    console.log(req.body, 'create message body');
-    const opponent =
-      dialog.users[0]._id == req.body.myId ? dialog.users[1] : dialog.users[0];
 
     if (dialog && me) {
+      const opponent =
+        dialog.users[0]._id == req.body.myId ? dialog.users[1] : dialog.users[0];
       new MessageSchema({
         date: new Date(),
         isReaded: false,
@@ -127,7 +125,7 @@ let MessagesController = {
             },
             { $set: { isReaded: true } },
             {},
-            (err, writeResult) => {}
+            (err, writeResult) => { }
           );
 
           res.send(data);

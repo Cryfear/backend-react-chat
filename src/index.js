@@ -9,8 +9,6 @@ import usersRouter from "./routes/users.js";
 import { socketInitialization } from "./core/socket.js";
 import MongoStore from "connect-mongo";
 import { createRequire } from "module";
-import UserSchema from "./models/User.js";
-import mongoose from "mongoose";
 
 const require = createRequire(import.meta.url);
 
@@ -71,9 +69,10 @@ app.use("/", usersRouter);
 
 // connecting
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://govnoepta:12345@cluster0.qsis8na.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const mongoose = require("mongoose");
+
+//const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
+
 app.get("/", (req, res) => {
   res.json({ message: "API работает!" });
 });
@@ -81,10 +80,9 @@ app.get("/", (req, res) => {
 
 async function startServer() {
   try {
-    await mongoose.connect(uri);
-    console.log("✅ Connected to MongoDB via Mongoose");
+    await mongoose.connect(process.env.DATABASE_URL);
 
-    server.listen(8888, () =>
+    server.listen(process.env.PORT, () =>
       console.log("API сервер работает на http://localhost:8888")
     );
   } catch (err) {
@@ -93,5 +91,6 @@ async function startServer() {
 }
 
 startServer();
+
 
 

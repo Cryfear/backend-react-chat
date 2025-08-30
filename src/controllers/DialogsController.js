@@ -4,60 +4,70 @@ import User from "../models/User.js";
 
 let DialogsController = {
   findDialog: async (req, res) => {
-    Dialog.findOne({
-      users: { $all: [req.params.id, req.params.id2] },
-    }).exec((_, dialog) => {
-      if (dialog) {
-        console.log(dialog._id.toString(), 'dada dengiu');
-        res.send(dialog);
-      } else {
+    if (req.params.id) {
+      Dialog.findOne({
+        users: { $all: [req.params.id, req.params.id2] },
+      }).then((dialog) => {
+        console.log(dialog)
+        if (dialog) {
+          console.log(dialog._id.toString(), 'dada dengiu');
+          res.send(dialog);
+        } else {
+          res.status(404).send("error");
+        }
+      }).catch((err) => {
         res.status(404).send("error");
-      }
-    });
+      });;
+    }
+
   },
 
   findMyDialogs: async (req, res) => {
-    Dialog.find({
-      users: { $in: [req.params.id] },
-    })
-      .skip(Number(req.body.page) * 10)
-      .limit(10)
-      .then((dialogs) => {
-        res.send(dialogs);
+    if (req.params.id && req.params.id !== 'null') {
+      Dialog.find({
+        users: { $in: [req.params.id] },
       })
-      .catch((err) => res.status(400).send("error"));
+        .skip(Number(req.body.page) * 10)
+        .limit(10)
+        .then((dialogs) => {
+          res.send(dialogs);
+        })
+        .catch((err) => res.status(400).send("error"));
+    }
+
   },
 
   createDialog: async (req, res) => {
-    let user = await User.findOne({ _id: req.body.id_1.id1 });
-    let user2 = await User.findOne({ _id: req.body.id_1.id2 });
-    console.log ('we are there')
-    if (user && user2) {
-      let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
-      console.log(dio);
-      if (!dio) {
-        console.log ('we are here')
-        new Dialog({
-          name: req.body.name,
-          users: [user._id, user2._id],
-        })
-          .populate("users")
-          .then((data) => {
-            res.send(data._id);
-            console.log(data, 'dialog data');
-            data.save();
-            return data;
+    if (req.body.id_1 === req.body.id_2) {
+      res.send('you cant create a dialig with yourself');
+    }
+    if (req.body) {
+      let user = await User.findOne({ _id: req.body.id_1 });
+      let user2 = await User.findOne({ _id: req.body.id_2 });
+
+      if (user && user2) {
+        let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
+        if (!dio) {
+          new Dialog({
+            name: req.body.name,
+            users: [user._id, user2._id],
           })
-          .catch((err) => {
-            console.log("unsuccesful create dialog");
-          });
-      } else {
-        if(dio._id) {
-          console.log('mi zdez');
-          const messages = await Message.find({ dialog: dio._id });
-          res.send({messages, dialogId: dio._id});
+            .populate("users")
+            .then((data) => {
+              res.send(data._id);
+              data.save();
+              return data;
+            })
+            .catch((err) => {
+              console.log("unsuccesful create dialog");
+            });
+        } else {
+          if (dio._id) {
+            const messages = await Message.find({ dialog: dio._id });
+            res.send({ messages, dialogId: dio._id });
+          }
+
         }
-        
       }
     }
   },
