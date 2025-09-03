@@ -5,12 +5,7 @@ import User from "../models/User.js";
 
 let MessagesController = {
   findDialogMessages: async (req, res) => {
-    MessageSchema.find({
-      $or: [
-        { dialog: req.body.dialogId, isReaded: true },
-        { dialog: req.body.dialogId, creater: req.body.myId },
-      ],
-    })
+    MessageSchema.find({ dialog: req.body.dialogId })
       .sort("-date")
       .skip(Number(req.body.page) * 10)
       .limit(10)
@@ -21,7 +16,6 @@ let MessagesController = {
   },
 
   findMessage: (req, res) => {
-    console.log(req.params, req.body);
     MessageSchema.findOne(
       {
         _id: req.params.id,
@@ -105,35 +99,39 @@ let MessagesController = {
 
     if (dialog && me) {
       const opponent =
-        dialog.users[0]._id == req.body.myId ? dialog.users[1] : dialog.users[0];
-      new MessageSchema({
+        dialog.users[0]._id.toString() == req.body.myId ? dialog.users[1] : dialog.users[0];
+
+      // Создаем новое сообщение
+      const newMessage = new MessageSchema({
         date: new Date(),
         isReaded: false,
         isTyping: false,
         data: req.body.data,
         dialog: dialog._id,
         creater: me._id,
-      })
-        .populate("dialog")
-        .then((data) => {
-          io.emit("qqq", data);
+      });
 
-          MessageSchema.updateMany(
-            {
-              dialog: dialog._id,
-              creater: opponent._id,
-            },
-            { $set: { isReaded: true } },
-            {},
-            (err, writeResult) => { }
-          );
+      // Сохраняем сообщение
+      const savedMessage = await newMessage.save();
 
-          res.send(data);
-          data.save();
-        })
-        .catch((err) => {
-          res.status(404).send(err);
-        });
+      // ПОПУЛЯЦИЯ ПОСЛЕ СОХРАНЕНИЯ
+      const populatedMessage = await MessageSchema.findById(savedMessage._id).populate("dialog").populate("creater");
+
+      const updateResult = await MessageSchema.updateMany(
+        {
+          dialog: dialog._id,
+          creater: opponent._id, // сообщения ОППОНЕНТА
+          isReaded: false        // только непрочитанные
+        },
+        {
+          $set: { isReaded: true }
+        }
+      );
+
+      io.emit("qqq", populatedMessage);
+
+      res.send(populatedMessage);
+
     }
   },
 

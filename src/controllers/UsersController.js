@@ -1,6 +1,9 @@
 import UserSchema from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { fileURLToPath } from "url";
+import { dirname, extname, join } from "path";
+import { v4 as uuidv4 } from 'uuid';
 
 let UsersController = {
   getUsers: async (req, res) => {
@@ -36,8 +39,7 @@ let UsersController = {
         UserSchema.find({ fullName: { $regex: req.params.name, $options: "i" } })
           .skip(Number(req.params.page) * 10)
           .limit(10)
-          .exec((err, users) => {
-            if (err) res.send("fail");
+          .then((users) => {
             const usersBySearch = users.map((user) => {
               const { fullName, isOnline, id } = user;
               // мапим определенные поля, чтобы юзер не получал лишней информации, например пароля.
@@ -96,34 +98,48 @@ let UsersController = {
   },
 
   uploadAvatar: (req, res) => {
-    if (!req.files) {
-      return res.status(500).send({ msg: "file is not found" });
-    }
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
 
     const myFile = req.files.file;
 
-    if (/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(myFile.name)) {
-      myFile.mv(`${__dirname}../../../public/${myFile.name}`, function (err) {
+    const fileExt = extname(myFile.name); // например .jpg
+    const uniqueName = `${uuidv4()}${fileExt}`; // например 550e8400-e29b-
+
+    if (!req.files) {
+      return res.status(400).send({ msg: "file is not found" });
+    }
+
+
+    if (/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(uniqueName)) {
+      // нормальный путь
+      const uploadPath = join(__dirname, "../../public", uniqueName);
+
+      myFile.mv(uploadPath, (err) => {
         if (err) {
+          console.error("Ошибка при сохранении файла:", err);
           return res.status(500).send({ msg: "something wrong" });
         }
 
-        UserSchema.findOne({
-          email: req.header("email"),
-        }).then((user) => {
-          user.avatar = myFile.name;
+        UserSchema.findOne({ email: req.header("email") }).then((user) => {
+          if (!user) {
+            return res.status(404).send({ msg: "User not found" });
+          }
+
+          user.avatar = uniqueName;
           user.isDefaultAvatar = false;
           user.save();
 
           return res.send({
-            file: myFile.name,
-            path: `/${myFile.name}`,
+            file: uniqueName,
+            path: `/public/${uniqueName}`, // путь для фронта
             responseCode: "success",
           });
         });
       });
     } else {
-      res.status(400).send("error");
+      res.status(400).send("Invalid file type");
     }
   },
 
@@ -248,9 +264,10 @@ let UsersController = {
       },
       undefined,
       (data) => {
-        if (data) return console.log(data);
-        res.send(data);
-        console.log("user deleted");
+        if (data) {
+          res.send(data);
+          console.log("user deleted");
+        }
       }
     );
   },

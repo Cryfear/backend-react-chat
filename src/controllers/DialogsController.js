@@ -8,9 +8,7 @@ let DialogsController = {
       Dialog.findOne({
         users: { $all: [req.params.id, req.params.id2] },
       }).then((dialog) => {
-        console.log(dialog)
         if (dialog) {
-          console.log(dialog._id.toString(), 'dada dengiu');
           res.send(dialog);
         } else {
           res.status(404).send("error");
