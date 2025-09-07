@@ -115,7 +115,7 @@ let MessagesController = {
       const savedMessage = await newMessage.save();
 
       // ПОПУЛЯЦИЯ ПОСЛЕ СОХРАНЕНИЯ
-      const populatedMessage = await MessageSchema.findById(savedMessage._id).populate("dialog").populate("creater");
+      const populatedMessage = await MessageSchema.findById(savedMessage._id);
 
       const updateResult = await MessageSchema.updateMany(
         {
@@ -131,7 +131,6 @@ let MessagesController = {
       io.emit("qqq", populatedMessage);
 
       res.send(populatedMessage);
-
     }
   },
 
