@@ -1,13 +1,13 @@
-import User from "../models/User.js";
+import User from "../models/User.ts";
 
 export default (req, res, next) => {
   const userId = req.header("id");
   
-  if (userId && userId !== 'null') {
+  if (userId && userId !== 'null' && userId !== 'undefined') {
     try {
       User.findOne({
         _id: userId,
-      }).then((user) => {
+      }).then((user: any) => {
         user.isOnline = true;
         user.last_seen = new Date();
         user.save();

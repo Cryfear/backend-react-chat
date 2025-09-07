@@ -1,4 +1,4 @@
-import { io } from "../index.js";
+import { io } from "../index.ts";
 
 export const socketInitialization = () => {
   let users = {};

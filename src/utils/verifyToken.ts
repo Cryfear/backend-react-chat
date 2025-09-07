@@ -6,7 +6,7 @@ export function verifyToken(req, res, next) {
   if (token === null) return res.send({responseCode: "Access Denied"});
 
   try {
-    req.user = jwt.verify(token, process.env.SESSION_SECRET);
+    req.user = jwt.verify(token, process.env.SESSION_SECRET as string);
     next();
   } catch (err) {
     res.send({responseCode: "Invalid Token"});

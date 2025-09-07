@@ -1,6 +1,16 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 
 const Schema = mongoose.Schema;
+
+export interface IMessage extends Document {
+  creater: Types.ObjectId;
+  data: string;
+  date: Date;
+  isReaded: boolean;
+  dialog: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const MessageSchema = new Schema(
   {

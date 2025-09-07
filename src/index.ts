@@ -1,19 +1,18 @@
 import express from "express";
 import * as dotenv from "dotenv";
 import session from "express-session";
-import { corsFunction, corsSettings } from "./core/cors.js";
-import authRouter from "./routes/auth.js";
-import dialogsRouter from "./routes/dialogs.js";
-import messagesRouter from "./routes/messages.js";
-import usersRouter from "./routes/users.js";
-import { socketInitialization } from "./core/socket.js";
 import MongoStore from "connect-mongo";
 import { createRequire } from "module";
+import mongoose from "mongoose";
+
+import { corsFunction, corsSettings } from "./core/cors.ts";
+import authRouter from "./routes/auth.ts";
+import dialogsRouter from "./routes/dialogs.ts";
+import messagesRouter from "./routes/messages.ts";
+import usersRouter from "./routes/users.ts";
+import { socketInitialization } from "./core/socket.ts";
 
 const require = createRequire(import.meta.url);
-
-const fileUpload = require("express-fileupload");
-
 
 const app = express();
 const cors = require("cors");
@@ -37,7 +36,7 @@ dotenv.config();
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true },
@@ -53,7 +52,6 @@ app.use(
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload());
 
 // cors
 
@@ -69,10 +67,6 @@ app.use("/", usersRouter);
 
 // connecting
 
-const mongoose = require("mongoose");
-
-//const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
-
 app.get("/", (req, res) => {
   res.json({ message: "API работает!" });
 });
@@ -80,7 +74,7 @@ app.get("/", (req, res) => {
 
 async function startServer() {
   try {
-    await mongoose.connect(process.env.DATABASE_URL);
+    await mongoose.connect(process.env.DATABASE_URL || 'check your env url');
 
     server.listen(process.env.PORT, () =>
       console.log("API сервер работает на http://localhost:8888")

@@ -1,6 +1,6 @@
 import router from "express";
-import DialogsController from "../controllers/DialogsController.js";
-import onlineChanger from "../utils/onlineChanger.js";
+import DialogsController from "../controllers/DialogsController.ts";
+import onlineChanger from "../utils/onlineChanger.ts";
 
 const routs = router.Router();
 

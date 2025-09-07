@@ -1,6 +1,6 @@
-import Dialog from "../models/Dialog.js";
-import Message from "../models/Message.js";
-import User from "../models/User.js";
+import Dialog from "../models/Dialog.ts";
+import Message from "../models/Message.ts";
+import User from "../models/User.ts";
 
 let DialogsController = {
   findDialog: async (req, res) => {
@@ -82,10 +82,6 @@ let DialogsController = {
       updateDialog,
       {
         new: true,
-      },
-      (err) => {
-        if (err) return console.log(err);
-        res.send(err);
       }
     );
   },

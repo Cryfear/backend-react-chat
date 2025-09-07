@@ -7,16 +7,17 @@
     "author": "Cryfear <vasil.arturok@yandex.ru>",
     "license": "MIT",
     "scripts": {
-        "watch": "nodemon src/index.js"
+        "watch": "nodemon --exec \"node --no-warnings=DEP0180 -r ts-node/register src/index.ts\""
     },
     "devDependencies": {
         "eslint": "^9.34.0",
-        "eslint-plugin-node": "^11.1.0"
+        "eslint-plugin-node": "^11.1.0",
+        "ts-node": "^10.9.2"
     },
     "dependencies": {
         "@types/bcrypt": "^6.0.0",
         "@types/cors": "^2.8.12",
-        "@types/express-fileupload": "^1.1.7",
+        "@types/express-fileupload": "^1.5.1",
         "@types/express-session": "^1.17.4",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/mongoose": "^5.11.97",
@@ -27,7 +28,7 @@
         "cors": "^2.8.5",
         "dotenv": "^17.2.1",
         "express": "^4.0.0",
-        "express-fileupload": "^1.2.1",
+        "express-fileupload": "^1.5.2",
         "express-session": "^1.17.2",
         "express-validator": "^7.2.1",
         "jsonwebtoken": "^9.0.2",
