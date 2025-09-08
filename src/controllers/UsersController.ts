@@ -1,3 +1,4 @@
+import type { IUser } from './../models/User';
 import type { Request, Response } from "express";
 import UserSchema from '../models/User.ts'
 import bcrypt from "bcrypt";
@@ -6,8 +7,8 @@ import { dirname, extname, join } from "path";
 import { v4 as uuidv4 } from 'uuid';
 import type { UploadedFile } from "express-fileupload";
 import { generateToken } from "../utils/jwtSign.ts";
+import type { DeleteResult } from "mongodb";
 
-// Интерфейсы для запросов
 interface LoginRequest {
   values: {
     email: string;
@@ -21,23 +22,12 @@ interface ChangePasswordRequest {
   newPassword: string;
 }
 
-interface ChangeNameRequest {
-  email: string;
-  newNickName: string;
-}
-
 interface CreateUserRequest {
   email: string;
   name: string;
   password: string;
 }
 
-interface GetMeRequest {
-  id: string;
-  email: string;
-}
-
-// Интерфейсы для ответов
 interface UserResponse {
   fullName: string;
   avatar: string;
@@ -131,7 +121,7 @@ const UsersController = {
   findUser: async (req: Request<{ id?: string }>, res: Response<UserResponse | { error: string }>) => {
     if (req.params.id && req.params.id !== 'null') {
       try {
-        const user: any = await UserSchema.findOne({ _id: req.params.id });
+        const user = await UserSchema.findOne({ _id: req.params.id });
         if (!user) {
           return res.status(404).send({ error: "User not found" });
         }
@@ -154,7 +144,7 @@ const UsersController = {
     }
   },
 
-  changeUserName: async (req: Request<{}, {}, ChangeNameRequest>, res: Response<{ responseCode: string } | { error: string }>) => {
+  changeUserName: async (req: Request<{}, {}, { email: string; newNickName: string; }>, res: Response<{ responseCode: string } | { error: string }>) => {
     if (req.body.newNickName) {
       try {
         const user = await UserSchema.findOne({ email: req.body.email });
@@ -272,7 +262,7 @@ const UsersController = {
     }
   },
 
-  logoutUser: (req: any, res: Response<{ message: string } | { error: string }>) => {
+  logoutUser: (req: Request, res: Response<{ message: string } | { error: string }>) => {
     req.session.userId = null;
     if (req.session) {
       req.session.destroy((err) => {
@@ -286,11 +276,10 @@ const UsersController = {
     }
   },
 
-  getMe: async (req: Request<{}, {}, GetMeRequest>, res: Response<GetMeResponse | { responseCode: string }>) => {
-    console.log('we are here', req.body)
+  getMe: async (req: Request<{}, {}, { id: string; email: string; }>, res: Response<GetMeResponse | { responseCode: string }>) => {
     if (req.body && req.body.id !== 'null' && req.body.id !== 'undefined') {
       try {
-        const user: any = await UserSchema.findOne({ email: req.body.email });
+        const user: IUser | null = await UserSchema.findOne({ email: req.body.email });
         if (!user) {
           return res.send({ responseCode: "Not logged in" });
         }
@@ -313,7 +302,7 @@ const UsersController = {
     }
   },
 
-  createUser: async (req: Request<{}, {}, CreateUserRequest>, res: Response<{ responseCode: string } | any>) => {
+  createUser: async (req: Request<{}, {}, CreateUserRequest>, res: Response<{ responseCode: string } | { error: string }>) => {
     try {
       const hash = await bcrypt.hash(req.body.password, 4);
       const user = new UserSchema({
@@ -323,22 +312,23 @@ const UsersController = {
       });
 
       const data = await user.save();
-      console.log('User created');
+
       res.send({ ...data.toObject(), responseCode: "success" });
     } catch (err) {
-      console.log('Error creating user:', err);
-      res.send({ responseCode: "fail" });
+      res.send({ error: "fail" });
     }
   },
 
-  deleteUser: async (req: Request<{ id: string }>, res: Response<any>) => {
+  deleteUser: async (req: Request<{ id: string }>, res: Response<DeleteResult | { error: string }>) => {
     try {
       const result = await UserSchema.deleteOne({ _id: req.params.id });
+
       if (result.deletedCount === 0) {
         return res.status(404).send({ error: "User not found" });
       }
-      res.send(result);
-      console.log("User deleted");
+
+      res.send(result as DeleteResult);
+
     } catch (err) {
       res.status(500).send({ error: "Failed to delete user" });
     }

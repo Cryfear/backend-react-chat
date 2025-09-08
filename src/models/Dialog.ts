@@ -1,5 +1,12 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 const Schema = mongoose.Schema;
+
+export interface IDialog extends Document {
+  users: Types.ObjectId[];
+  isTyping: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const DialogSchema = new Schema(
   {

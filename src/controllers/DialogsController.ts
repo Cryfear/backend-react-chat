@@ -1,9 +1,10 @@
-import Dialog from "../models/Dialog.ts";
-import Message from "../models/Message.ts";
+import type { Response, Request } from 'express';
+import Dialog, { type IDialog } from "../models/Dialog.ts";
+import Message, { type IMessage } from "../models/Message.ts";
 import User from "../models/User.ts";
 
 let DialogsController = {
-  findDialog: async (req, res) => {
+  findDialog: async (req: Request<{ id: string, id2: string }>, res: Response<IDialog | { error: string }>) => {
     if (req.params.id) {
       Dialog.findOne({
         users: { $all: [req.params.id, req.params.id2] },
@@ -11,16 +12,16 @@ let DialogsController = {
         if (dialog) {
           res.send(dialog);
         } else {
-          res.status(404).send("error");
+          res.status(404).send({ error: "error" });
         }
       }).catch((err) => {
-        res.status(404).send("error");
+        res.status(404).send({ error: err });
       });;
     }
 
   },
 
-  findMyDialogs: async (req, res) => {
+  findMyDialogs: async (req: Request<{ id: string }>, res: Response<IDialog[] | { error: string }>) => {
     if (req.params.id && req.params.id !== 'null') {
       Dialog.find({
         users: { $in: [req.params.id] },
@@ -30,15 +31,12 @@ let DialogsController = {
         .then((dialogs) => {
           res.send(dialogs);
         })
-        .catch((err) => res.status(400).send("error"));
+        .catch((err) => res.status(400).send({ error: err }));
     }
-
   },
+  createDialog: async (req: Request<{ id_1: string, id_2: string }>, res: Response) => { // need to refactoring, cuz i send messages in dialog controller, bad practice
+    if (req.body.id_1 === req.body.id_2) res.send({ error: 'you cant create a dialig with yourself' });
 
-  createDialog: async (req, res) => {
-    if (req.body.id_1 === req.body.id_2) {
-      res.send('you cant create a dialig with yourself');
-    }
     if (req.body) {
       let user = await User.findOne({ _id: req.body.id_1 });
       let user2 = await User.findOne({ _id: req.body.id_2 });
@@ -70,7 +68,8 @@ let DialogsController = {
     }
   },
 
-  updateDialog: async (req, res) => {
+  updateDialog: async (req: Request<{avatar: string, fullName: string, id: string}>) => {
+    // not realised function! wait update
     const updateDialog = {
       avatar: req.body.avatar,
       fullName: req.body.fullName,
@@ -86,9 +85,10 @@ let DialogsController = {
     );
   },
 
-  deleteDialog: async (req, res) => {
+  deleteDialog: async (req: Request, res: Response) => {
+    // not realised function! wait update
     try {
-      const dialog = await Dialog.deleteOne({ _id: req.params.id }).then(
+      await Dialog.deleteOne({ _id: req.params.id }).then(
         (data) => res.send(data)
       );
     } catch (err) {

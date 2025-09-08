@@ -12,6 +12,14 @@ import messagesRouter from "./routes/messages.ts";
 import usersRouter from "./routes/users.ts";
 import { socketInitialization } from "./core/socket.ts";
 
+declare module 'express-session' {
+  interface SessionData {
+    userId: string | null;
+    email: string,
+    authToken: string
+  }
+}
+
 const require = createRequire(import.meta.url);
 
 const app = express();

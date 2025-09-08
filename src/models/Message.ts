@@ -8,6 +8,9 @@ export interface IMessage extends Document {
   date: Date;
   isReaded: boolean;
   dialog: Types.ObjectId;
+  isTyping?: boolean;
+  avatar?: string;
+  fullName?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -9,6 +9,7 @@ export interface IUser extends Document {
   confirmed: boolean;
   isOnline: boolean;
   last_seen: Date;
+  _id: string
 }
 
 const UserSchema: Schema = new Schema(
