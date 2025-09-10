@@ -107,7 +107,7 @@ const MessagesController = {
     if (req.body.dialogId && req.body.userId) {
       try {
         const page = Number(req.body.unreadedPage) || 0;
-        const messages: any = await MessageSchema.find({
+        const messages = await MessageSchema.find({
           dialog: req.body.dialogId,
           creater: req.body.userId,
           isReaded: false,
@@ -116,7 +116,7 @@ const MessagesController = {
           .skip(page * 10)
           .limit(10);
 
-        res.send(messages);
+        res.send(messages as IMessage[]);
       } catch (error) {
         res.status(404).send({ error: "Failed to get unread messages" });
       }
@@ -194,7 +194,7 @@ const MessagesController = {
     }
   },
 
-  deleteMessage: async (req: Request<{id: string}>, res: Response<any>) => {
+  deleteMessage: async (req: Request<{id: string}>, res: Response) => {
     try {
       const result = await MessageSchema.deleteOne({ _id: req.params.id });
 

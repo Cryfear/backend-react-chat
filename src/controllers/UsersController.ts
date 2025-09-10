@@ -5,28 +5,9 @@ import bcrypt from "bcrypt";
 import { fileURLToPath } from "url";
 import { dirname, extname, join } from "path";
 import { v4 as uuidv4 } from 'uuid';
-import type { UploadedFile } from "express-fileupload";
+import type { FileArray, UploadedFile } from "express-fileupload";
 import { generateToken } from "../utils/jwtSign.ts";
 import type { DeleteResult } from "mongodb";
-
-interface LoginRequest {
-  values: {
-    email: string;
-    password: string;
-  };
-}
-
-interface ChangePasswordRequest {
-  email: string;
-  oldPassword: string;
-  newPassword: string;
-}
-
-interface CreateUserRequest {
-  email: string;
-  name: string;
-  password: string;
-}
 
 interface UserResponse {
   fullName: string;
@@ -53,12 +34,6 @@ interface GetMeResponse {
   responseCode: string;
 }
 
-interface UploadResponse {
-  file: string;
-  path: string;
-  responseCode: string;
-}
-
 const UsersController = {
   getUsers: async (req: Request<{ page?: string }>, res: Response<UserResponse[] | { error: string }>) => {
     if (req.params && req.params.page !== 'null') {
@@ -68,7 +43,7 @@ const UsersController = {
           .skip(page * 10)
           .limit(10);
 
-        const mappedUsers: UserResponse[] = users.map((user: any) => {
+        const mappedUsers: UserResponse[] = users.map((user) => {
           return {
             fullName: user.fullName,
             avatar: user.isDefaultAvatar
@@ -98,7 +73,7 @@ const UsersController = {
           .skip(page * 10)
           .limit(10);
 
-        const usersBySearch: UserResponse[] = users.map((user: any) => {
+        const usersBySearch: UserResponse[] = users.map((user) => {
           return {
             fullName: user.fullName,
             avatar: user.isDefaultAvatar
@@ -144,7 +119,7 @@ const UsersController = {
     }
   },
 
-  changeUserName: async (req: Request<{}, {}, { email: string; newNickName: string; }>, res: Response<{ responseCode: string } | { error: string }>) => {
+  changeUserName: async (req: Request<{ email: string; newNickName: string; }>, res: Response<{ responseCode: string } | { error: string }>) => {
     if (req.body.newNickName) {
       try {
         const user = await UserSchema.findOne({ email: req.body.email });
@@ -163,7 +138,11 @@ const UsersController = {
     }
   },
 
-  uploadAvatar: async (req: Request, res: Response<UploadResponse | { error: string; msg?: string }>) => {
+  uploadAvatar: async (req: Request<{files: FileArray}>, res: Response<{
+    file: string;
+    path: string;
+    responseCode: string;
+  } | { error: string; msg?: string }>) => {
     try {
       if (!req.files || !req.files.file) {
         return res.status(400).send({ error: "File is not found", msg: "file is not found" });
@@ -203,7 +182,7 @@ const UsersController = {
     }
   },
 
-  changeUserPassword: async (req: Request<{}, {}, ChangePasswordRequest>, res: Response<{ responseCode: string } | { error: string }>) => {
+  changeUserPassword: async (req: Request<{ email: string, oldPassword: string, newPassword: string }>, res: Response<{ responseCode: string } | { error: string }>) => {
     if (req.body) {
       try {
         const user = await UserSchema.findOne({ email: req.body.email });
@@ -229,10 +208,15 @@ const UsersController = {
     }
   },
 
-  loginUser: async (req: Request<{}, {}, LoginRequest>, res: Response<LoginResponse | { error: string }>) => {
+  loginUser: async (req: Request<{
+    values: {
+      email: string;
+      password: string;
+    }
+  }>, res: Response<LoginResponse | { error: string }>) => {
     if (req.body) {
       try {
-        const user: any = await UserSchema.findOne({ email: req.body.values.email });
+        const user = await UserSchema.findOne({ email: req.body.values.email });
         if (!user) {
           return res.send({ error: "Username or password incorrect" });
         }
@@ -276,7 +260,7 @@ const UsersController = {
     }
   },
 
-  getMe: async (req: Request<{}, {}, { id: string; email: string; }>, res: Response<GetMeResponse | { responseCode: string }>) => {
+  getMe: async (req: Request<{ id: string; email: string; }>, res: Response<GetMeResponse | { responseCode: string }>) => {
     if (req.body && req.body.id !== 'null' && req.body.id !== 'undefined') {
       try {
         const user: IUser | null = await UserSchema.findOne({ email: req.body.email });
@@ -302,7 +286,11 @@ const UsersController = {
     }
   },
 
-  createUser: async (req: Request<{}, {}, CreateUserRequest>, res: Response<{ responseCode: string } | { error: string }>) => {
+  createUser: async (req: Request<{
+    email: string;
+    name: string;
+    password: string;
+  }>, res: Response<{ responseCode: string } | { error: string }>) => {
     try {
       const hash = await bcrypt.hash(req.body.password, 4);
       const user = new UserSchema({
