@@ -10,7 +10,10 @@ import authRouter from "./routes/auth.ts";
 import dialogsRouter from "./routes/dialogs.ts";
 import messagesRouter from "./routes/messages.ts";
 import usersRouter from "./routes/users.ts";
+import profilesRouter from "./routes/profiles.ts";
 import { socketInitialization } from "./core/socket.ts";
+import User from "./models/User.ts";
+import Profile from "./models/Profile.ts";
 
 declare module 'express-session' {
   interface SessionData {
@@ -72,6 +75,7 @@ app.use("/", authRouter);
 app.use("/", dialogsRouter);
 app.use("/", messagesRouter);
 app.use("/", usersRouter);
+app.use("/", profilesRouter);
 
 // connecting
 

@@ -1,6 +1,6 @@
 import type { Response, Request } from 'express';
 import Dialog, { type IDialog } from "../models/Dialog.ts";
-import Message, { type IMessage } from "../models/Message.ts";
+import Message from "../models/Message.ts";
 import User from "../models/User.ts";
 
 let DialogsController = {

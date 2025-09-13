@@ -1,4 +1,4 @@
-import type { IUser } from './../models/User';
+import type { IUser } from './../models/User.ts';
 import type { Request, Response } from "express";
 import UserSchema from '../models/User.ts'
 import bcrypt from "bcrypt";
