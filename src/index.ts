@@ -12,8 +12,7 @@ import messagesRouter from "./routes/messages.ts";
 import usersRouter from "./routes/users.ts";
 import profilesRouter from "./routes/profiles.ts";
 import { socketInitialization } from "./core/socket.ts";
-import User from "./models/User.ts";
-import Profile from "./models/Profile.ts";
+import fileUpload from "express-fileupload";
 
 declare module 'express-session' {
   interface SessionData {
@@ -58,6 +57,11 @@ app.use(
   })
 );
 
+app.use(fileUpload({
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  abortOnLimit: true,
+}));
+
 // parsing
 
 app.use(express.static('public'));
@@ -97,6 +101,3 @@ async function startServer() {
 }
 
 startServer();
-
-
-

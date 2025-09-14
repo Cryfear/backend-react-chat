@@ -46,9 +46,7 @@ const UsersController = {
         const mappedUsers: UserResponse[] = users.map((user) => {
           return {
             fullName: user.fullName,
-            avatar: user.isDefaultAvatar
-              ? user.avatar
-              : `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
+            avatar: `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
             isOnline: user.isOnline,
             id: user._id.toString(),
           };
@@ -76,9 +74,7 @@ const UsersController = {
         const usersBySearch: UserResponse[] = users.map((user) => {
           return {
             fullName: user.fullName,
-            avatar: user.isDefaultAvatar
-              ? user.avatar
-              : `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
+            avatar: `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
             isOnline: user.isOnline,
             id: user._id.toString(),
           };
@@ -101,13 +97,9 @@ const UsersController = {
           return res.status(404).send({ error: "User not found" });
         }
 
-        const avatar = user.isDefaultAvatar
-          ? user.avatar
-          : `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`;
-
         res.send({
           fullName: user.fullName,
-          avatar,
+          avatar: `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
           isOnline: user.isOnline,
           id: user._id.toString()
         });
@@ -233,9 +225,7 @@ const UsersController = {
           email: user.email,
           fullName: user.fullName,
           id: user._id.toString(),
-          avatar: user.isDefaultAvatar
-            ? user.avatar
-            : `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
+          avatar: `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
           responseCode: "success",
         });
       } catch (err) {
@@ -272,9 +262,7 @@ const UsersController = {
           email: user.email,
           fullName: user.fullName,
           isOnline: user.isOnline,
-          avatar: user.isDefaultAvatar
-            ? user.avatar
-            : `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
+          avatar: `${process.env.BACKEND_URL}:${process.env.PORT}/${user.avatar}`,
           id: user._id.toString(),
           responseCode: "success",
         });

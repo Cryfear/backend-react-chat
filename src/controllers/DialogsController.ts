@@ -54,9 +54,6 @@ let DialogsController = {
               data.save();
               return data;
             })
-            .catch((err) => {
-              console.log("unsuccesful create dialog");
-            });
         } else {
           if (dio._id) {
             const messages = await Message.find({ dialog: dio._id });

@@ -23,7 +23,7 @@ const UserSchema: Schema = new Schema(
     },
     avatar: {
       type: String, 
-      default: 'https://www.kindpng.com/picc/m/24-248528_internet-user-png-person-in-charge-icon-transparent.png'
+      default: `/bdd9aaee8c129b1d0a7180512c6f7ae5.jpg`
     },
     isDefaultAvatar: {
       type: Boolean,

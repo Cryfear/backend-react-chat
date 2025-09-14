@@ -10,7 +10,7 @@ interface OnlineChangerResponse {
   error?: string;
 }
 
-export const onlineChanger = async (
+export const onlineChanger: any = async (
   req: CustomRequest,
   res: Response<OnlineChangerResponse>,
   next: NextFunction
