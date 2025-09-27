@@ -13,11 +13,14 @@ const ProfilesController = {
           profile.owner.avatar = `${process.env.BACKEND_URL}:${process.env.PORT}/${profile.owner.avatar}`;
           res.send(profile);
         } else {
-          res.status(404).send({ error: "error" });
+          res.status(404).send({ error: "profile not found" });
         }
       }).catch((err) => {
         res.status(404).send({ error: err });
       });;
+    }
+    else {
+      res.status(400).send({error: 'profile doesnt exist or something about'})
     }
   },
 }

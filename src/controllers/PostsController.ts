@@ -5,12 +5,11 @@ import Profile from '../models/Profile.ts';
 
 const PostsController = {
     createPost: async (req: Request, res: Response) => {
-        console.log(req.body);
         try {
             const { id, content, creater } = req.body;
 
             // Валидация
-            if (!id || !creater) {
+            if (!id || !creater || id === 'null' || id === 'undefined') {
                 return res.status(400).json({ error: "Owner and creator IDs are required" });
             }
             if (!content || content.trim().length === 0) {
@@ -33,6 +32,8 @@ const PostsController = {
                 { new: true, upsert: true } // upsert: true создаст профиль если не существует
             );
 
+            res.status(200).json(savedPost);
+
         } catch (error) {
             console.error("Error creating post:", error);
             res.status(500).json({ error: "Internal server error" });
@@ -40,7 +41,6 @@ const PostsController = {
     },
     findPosts: async (req: Request, res: Response) => {
     try {
-        console.log(req.params.id);
         
         if (!req.params.id) {
             return res.status(400).json({ error: "User ID is required" });
@@ -70,7 +70,7 @@ const PostsController = {
         res.status(200).json(mappedPosts);
 
     } catch (error) {
-        console.error("Error finding posts:", error);
+        console.error("Error finding posts:");
         res.status(500).json({ error: "Internal server error" });
     }
 }

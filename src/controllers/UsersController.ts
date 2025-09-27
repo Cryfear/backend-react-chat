@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { FileArray, UploadedFile } from "express-fileupload";
 import { generateToken } from "../utils/jwtSign.ts";
 import type { DeleteResult } from "mongodb";
+import Profile from '../models/Profile.ts';
 
 interface UserResponse {
   fullName: string;
@@ -286,6 +287,10 @@ const UsersController = {
         fullName: req.body.name,
         password: hash,
       });
+
+      new Profile({
+        owner: user,
+      })
 
       const data = await user.save();
 

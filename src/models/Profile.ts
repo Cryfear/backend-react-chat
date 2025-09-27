@@ -18,11 +18,12 @@ const ProfileSchema = new Schema(
             unique: true
         },
         friends: [ // друзья пользователя, массив обьектов
-            { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            { type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] },
         ],
         posts: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Post" 
+            ref: "Post",
+            default: []
         }],
         bio: { type: String, default: 'Tell us about you' }
     },
