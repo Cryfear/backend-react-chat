@@ -21,6 +21,7 @@ const MessageSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    enum: ["text", "audio", "photo"],
     data: { type: String, required: true }, // текст сообщения, его содержимое
     date: { type: Date, default: new Date() },
     isReaded: {

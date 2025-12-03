@@ -4,6 +4,7 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import { createRequire } from "module";
 import mongoose from "mongoose";
+import path from "path";
 
 import { corsFunction, corsSettings } from "./core/cors.ts";
 import authRouter from "./routes/auth.ts";
@@ -14,11 +15,11 @@ import profilesRouter from "./routes/profiles.ts";
 import { socketInitialization } from "./core/socket.ts";
 import fileUpload from "express-fileupload";
 
-declare module 'express-session' {
+declare module "express-session" {
   interface SessionData {
     userId: string | null;
-    email: string,
-    authToken: string
+    email: string;
+    authToken: string;
   }
 }
 
@@ -42,8 +43,6 @@ socketInitialization();
 
 dotenv.config();
 
-// express session
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
@@ -57,14 +56,17 @@ app.use(
   })
 );
 
-app.use(fileUpload({
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  abortOnLimit: true,
-}));
+app.use(
+  fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    abortOnLimit: true,
+  })
+);
 
 // parsing
 
-app.use(express.static('public'));
+app.use(express.static("public"));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -87,14 +89,11 @@ app.get("/", (req, res) => {
   res.json({ message: "API работает!" });
 });
 
-
 async function startServer() {
   try {
-    await mongoose.connect(process.env.DATABASE_URL || 'check your env url');
+    await mongoose.connect(process.env.DATABASE_URL || "check your env url");
 
-    server.listen(process.env.PORT, () =>
-      console.log("API сервер работает на http://localhost:8888")
-    );
+    server.listen(process.env.PORT, () => console.log("API сервер работает на http://localhost:8888"));
   } catch (err) {
     console.error("Ошибка подключения:", err);
   }

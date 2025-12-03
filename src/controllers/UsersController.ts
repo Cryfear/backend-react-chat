@@ -37,10 +37,7 @@ interface GetMeResponse {
 }
 
 const UsersController = {
-  getUsers: async (
-    req: Request<{ page?: string }>,
-    res: Response<UserResponse[] | { error: string }>
-  ) => {
+  getUsers: async (req: Request<{ page?: string }>, res: Response<UserResponse[] | { error: string }>) => {
     if (req.params && req.params.page !== "null") {
       try {
         const page = Number(req.params.page) || 0;
@@ -66,10 +63,7 @@ const UsersController = {
     }
   },
 
-  getUsersByName: async (
-    req: Request<{ name?: string; page?: string }>,
-    res: Response<UserResponse[] | { error: string }>
-  ) => {
+  getUsersByName: async (req: Request<{ name?: string; page?: string }>, res: Response<UserResponse[] | { error: string }>) => {
     if (req.params && req.params.name !== "null") {
       try {
         const page = Number(req.params.page) || 0;
@@ -97,10 +91,7 @@ const UsersController = {
     }
   },
 
-  findUser: async (
-    req: Request<{ id?: string }>,
-    res: Response<UserResponse | { error: string }>
-  ) => {
+  findUser: async (req: Request<{ id?: string }>, res: Response<UserResponse | { error: string }>) => {
     if (req.params.id && req.params.id !== "null") {
       try {
         const user = await UserSchema.findOne({ _id: req.params.id });
@@ -157,9 +148,7 @@ const UsersController = {
   ) => {
     try {
       if (!req.files || !req.files.file) {
-        return res
-          .status(400)
-          .send({ error: "File is not found", msg: "file is not found" });
+        return res.status(400).send({ error: "File is not found", msg: "file is not found" });
       }
 
       const myFile = req.files.file as UploadedFile;
@@ -180,9 +169,7 @@ const UsersController = {
         email: req.header("email") || "",
       });
       if (!user) {
-        return res
-          .status(404)
-          .send({ error: "User not found", msg: "User not found" });
+        return res.status(404).send({ error: "User not found", msg: "User not found" });
       }
 
       user.avatar = uniqueName;
@@ -196,9 +183,7 @@ const UsersController = {
       });
     } catch (err) {
       console.error("Upload error:", err);
-      res
-        .status(500)
-        .send({ error: "Something went wrong", msg: "something wrong" });
+      res.status(500).send({ error: "Something went wrong", msg: "something wrong" });
     }
   },
 
@@ -213,10 +198,7 @@ const UsersController = {
           return res.status(404).send({ error: "User not found" });
         }
 
-        const isMatch = await bcrypt.compare(
-          req.body.oldPassword,
-          user.password
-        );
+        const isMatch = await bcrypt.compare(req.body.oldPassword, user.password);
         if (!isMatch) {
           return res.status(400).send({ error: "Invalid old password" });
         }
@@ -250,10 +232,7 @@ const UsersController = {
           return res.send({ error: "Username or password incorrect" });
         }
 
-        const isMatch = await bcrypt.compare(
-          req.body.values.password,
-          user.password
-        );
+        const isMatch = await bcrypt.compare(req.body.values.password, user.password);
         if (!isMatch) {
           return res.send({ error: "Username or password incorrect" });
         }
@@ -276,10 +255,7 @@ const UsersController = {
     }
   },
 
-  logoutUser: (
-    req: Request,
-    res: Response<{ message: string } | { error: string }>
-  ) => {
+  logoutUser: (req: Request, res: Response<{ message: string } | { error: string }>) => {
     req.session.userId = null;
     if (req.session) {
       req.session.destroy((err) => {
@@ -293,10 +269,7 @@ const UsersController = {
     }
   },
 
-  getMe: async (
-    req: Request<{ id: string; email: string }>,
-    res: Response<GetMeResponse | { responseCode: string }>
-  ) => {
+  getMe: async (req: Request<{ id: string; email: string }>, res: Response<GetMeResponse | { responseCode: string }>) => {
     if (req.body && req.body.id !== "null" && req.body.id !== "undefined") {
       try {
         const user: IUser | null = await UserSchema.findOne({
@@ -322,49 +295,48 @@ const UsersController = {
     }
   },
 
-  createUser: async (req: Request<{
-  email: string;
-  name: string;
-  password: string;
-}>, res: Response<{ responseCode: string } | { error: string }>) => {
-  try {
-    const hash = await bcrypt.hash(req.body.password, 4);
-    
-    // Создаем и сохраняем пользователя
-    const user = new UserSchema({
-      email: req.body.email,
-      fullName: req.body.name,
-      password: hash,
-    });
-    const savedUser = await user.save();
-
-    // Создаем и сохраняем профиль
-    const profile = new Profile({
-      owner: savedUser._id, // используем ID сохраненного пользователя
-    });
-    await profile.save(); // ждем сохранения профиля
-
-    res.send({ 
-      ...savedUser.toObject(), 
-      responseCode: "success" 
-    });
-
-  } catch (err: any) {
-    console.error('Error creating user:', err);
-    
-    // Если ошибка уникальности (дубликат email)
-    if (err.code === 11000) {
-      res.status(400).send({ error: "User already exists" });
-    } else {
-      res.status(500).send({ error: "Registration failed" });
-    }
-  }
-},
-
-  deleteUser: async (
-    req: Request<{ id: string }>,
-    res: Response<DeleteResult | { error: string }>
+  createUser: async (
+    req: Request<{
+      email: string;
+      name: string;
+      password: string;
+    }>,
+    res: Response<{ responseCode: string } | { error: string }>
   ) => {
+    try {
+      const hash = await bcrypt.hash(req.body.password, 4);
+
+      // Создаем и сохраняем пользователя
+      const user = new UserSchema({
+        email: req.body.email,
+        fullName: req.body.name,
+        password: hash,
+      });
+      const savedUser = await user.save();
+
+      // Создаем и сохраняем профиль
+      const profile = new Profile({
+        owner: savedUser._id, // используем ID сохраненного пользователя
+      });
+      await profile.save(); // ждем сохранения профиля
+
+      res.send({
+        ...savedUser.toObject(),
+        responseCode: "success",
+      });
+    } catch (err: any) {
+      console.error("Error creating user:", err);
+
+      // Если ошибка уникальности (дубликат email)
+      if (err.code === 11000) {
+        res.status(400).send({ error: "User already exists" });
+      } else {
+        res.status(500).send({ error: "Registration failed" });
+      }
+    }
+  },
+
+  deleteUser: async (req: Request<{ id: string }>, res: Response<DeleteResult | { error: string }>) => {
     try {
       const result = await UserSchema.deleteOne({ _id: req.params.id });
 

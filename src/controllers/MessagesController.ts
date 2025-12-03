@@ -4,6 +4,10 @@ import MessageSchema, { type IMessage } from "../models/Message.ts";
 import Dialog from "../models/Dialog.ts";
 import User from "../models/User.ts";
 import type { Types } from "mongoose";
+import type { UploadedFile } from "express-fileupload";
+import path from "path";
+import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 interface UpdateMessageRequest {
   body: {
@@ -46,7 +50,6 @@ const MessagesController = {
     }
   },
 
-
   findMessage: async (req: Request<{ id: string }>, res: Response<MessageResponse | { error: string }>) => {
     try {
       const message = await MessageSchema.findOne({ _id: req.params.id });
@@ -59,16 +62,10 @@ const MessagesController = {
     }
   },
 
-  findLastMessage: async (
-    req: Request<{}, {}, { id: string }>, res: Response<{ text: string; date: Date; } | { error: string }>
-  ) => {
+  findLastMessage: async (req: Request<{}, {}, { id: string }>, res: Response<{ text: string; date: Date } | { error: string }>) => {
     if (req.body.id) {
       try {
-        const messages = await MessageSchema.find({ dialog: req.body.id })
-          .sort("-date")
-          .limit(1)
-          .lean()
-          .exec();
+        const messages = await MessageSchema.find({ dialog: req.body.id }).sort("-date").limit(1).lean().exec();
 
         const lastMessage = messages[0];
 
@@ -76,7 +73,7 @@ const MessagesController = {
           return res.status(404).send({ error: "No messages found" });
         }
 
-        res.send({ text: lastMessage.data, date: lastMessage.date })
+        res.send({ text: lastMessage.data, date: lastMessage.date });
       } catch (error) {
         res.status(404).send({ error: "Failed to find last message" });
       }
@@ -85,7 +82,10 @@ const MessagesController = {
     }
   },
 
-  getUnreadMessages: async (req: Request<{}, {}, { dialogId: string, userId: string }>, res: Response<{ length: number } | { error: string }>) => {
+  getUnreadMessages: async (
+    req: Request<{}, {}, { dialogId: string; userId: string }>,
+    res: Response<{ length: number } | { error: string }>
+  ) => {
     if (req.body.dialogId && req.body.userId) {
       try {
         const messages = await MessageSchema.find({
@@ -103,7 +103,10 @@ const MessagesController = {
     }
   },
 
-  getUnreadMessagesWithData: async (req: Request<{}, {}, { dialogId: string, userId: string, unreadedPage: number }>, res: Response<IMessage[] | { error: string }>) => {
+  getUnreadMessagesWithData: async (
+    req: Request<{}, {}, { dialogId: string; userId: string; unreadedPage: number }>,
+    res: Response<IMessage[] | { error: string }>
+  ) => {
     if (req.body.dialogId && req.body.userId) {
       try {
         const page = Number(req.body.unreadedPage) || 0;
@@ -125,7 +128,10 @@ const MessagesController = {
     }
   },
 
-  createMessage: async (req: Request<{}, {}, { dialogId: string, userId: string, myId: string, data: string }>, res: Response<IMessage | { error: string }>) => {
+  createMessage: async (
+    req: Request<{}, {}, { dialogId: string; userId: string; myId: string; data: string }>,
+    res: Response<IMessage | { error: string }>
+  ) => {
     try {
       const dialog = await Dialog.findOne({ _id: req.body.dialogId });
       const me = await User.findOne({ _id: req.body.myId });
@@ -134,9 +140,7 @@ const MessagesController = {
         return res.status(404).send({ error: "Dialog or user not found" });
       }
 
-      const opponent = dialog.users[0]._id.toString() === req.body.myId
-        ? dialog.users[1]
-        : dialog.users[0];
+      const opponent = dialog.users[0]._id.toString() === req.body.myId ? dialog.users[1] : dialog.users[0];
 
       if (!opponent) return res.status(400).send({ error: "Dialog or user not found" });
 
@@ -144,6 +148,7 @@ const MessagesController = {
         date: new Date(),
         isReaded: false,
         isTyping: false,
+        type: "text",
         data: req.body.data,
         dialog: dialog._id,
         creater: me._id,
@@ -155,10 +160,10 @@ const MessagesController = {
         {
           dialog: dialog._id,
           creater: opponent._id,
-          isReaded: false
+          isReaded: false,
         },
         {
-          $set: { isReaded: true }
+          $set: { isReaded: true },
         }
       );
 
@@ -172,7 +177,10 @@ const MessagesController = {
     }
   },
 
-  updateMessage: async (req: Request<UpdateMessageRequest['params'], {}, UpdateMessageRequest['body']>, res: Response<IMessage | { error: string }>) => {
+  updateMessage: async (
+    req: Request<UpdateMessageRequest["params"], {}, UpdateMessageRequest["body"]>,
+    res: Response<IMessage | { error: string }>
+  ) => {
     // after some refactoring i'm not sure that this is works, test it later.
     try {
       if (req.body.avatar && req.body.fullName) {
@@ -187,14 +195,13 @@ const MessagesController = {
         }
 
         res.send(message as IMessage);
-
       }
     } catch (error) {
       res.status(404).send({ error: "Failed to update message" });
     }
   },
 
-  deleteMessage: async (req: Request<{id: string}>, res: Response) => {
+  deleteMessage: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const result = await MessageSchema.deleteOne({ _id: req.params.id });
 
@@ -205,6 +212,62 @@ const MessagesController = {
       res.send(result);
     } catch (error) {
       res.status(500).send({ error: "Failed to delete message" });
+    }
+  },
+
+  createAudioMessage: async (
+    req: Request<{}, {}, { dialogId: string; userId: string; myId: string; data: string }>,
+    res: Response<IMessage | { error: string }>
+  ) => {
+    try {
+      const { dialogId, myId } = req.body;
+
+      if (!req.files || !req.files.audio) {
+        return res.status(400).send({ error: "Audio file is required" });
+      }
+
+      const audio = req.files.audio as UploadedFile;
+
+      // Проверяем тип
+      if (!audio.mimetype.startsWith("audio/")) {
+        return res.status(400).send({ error: "Wrong file type" });
+      }
+
+      const dialog = await Dialog.findOne({ _id: dialogId });
+      const me = await User.findOne({ _id: myId });
+
+      if (!dialog || !me) {
+        return res.status(404).send({ error: "Dialog or user not found" });
+      }
+
+      const uploadDir = path.join(process.cwd(), "uploads", "audio");
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+      const filename = uuidv4() + path.extname(audio.name);
+      const filepath = path.join(uploadDir, filename);
+
+      await audio.mv(filepath);
+
+      const newMessage = new MessageSchema({
+        date: new Date(),
+        isReaded: false,
+        isTyping: false,
+        enum: "audio",
+        data: `/uploads/audio/${filename}`,
+        dialog: dialog._id,
+        creater: me._id,
+      });
+
+      const saved = await newMessage.save();
+
+      const lastMessageForSocket = await MessageSchema.findById(saved._id);
+
+      io.emit("new_message", lastMessageForSocket);
+
+      res.send(lastMessageForSocket as IMessage);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: "Failed to create audio message" });
     }
   },
 };
