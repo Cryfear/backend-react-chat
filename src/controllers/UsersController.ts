@@ -306,7 +306,6 @@ const UsersController = {
     try {
       const hash = await bcrypt.hash(req.body.password, 4);
 
-      // Создаем и сохраняем пользователя
       const user = new UserSchema({
         email: req.body.email,
         fullName: req.body.name,
@@ -314,25 +313,17 @@ const UsersController = {
       });
       const savedUser = await user.save();
 
-      // Создаем и сохраняем профиль
       const profile = new Profile({
-        owner: savedUser._id, // используем ID сохраненного пользователя
+        owner: savedUser._id,
       });
-      await profile.save(); // ждем сохранения профиля
+      await profile.save();
 
       res.send({
         ...savedUser.toObject(),
         responseCode: "success",
       });
-    } catch (err: any) {
-      console.error("Error creating user:", err);
-
-      // Если ошибка уникальности (дубликат email)
-      if (err.code === 11000) {
-        res.status(400).send({ error: "User already exists" });
-      } else {
-        res.status(500).send({ error: "Registration failed" });
-      }
+    } catch (err: unknown) {
+      console.log("Error creating user:", err);
     }
   },
 
