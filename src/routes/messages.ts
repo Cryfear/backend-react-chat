@@ -10,8 +10,6 @@ routs.post("/messages/create", onlineChanger, MessagesController.createMessage);
 routs.post("/messages/createAudio", onlineChanger, MessagesController.createAudioMessage);
 routs.put("/messages/:id", onlineChanger, MessagesController.updateMessage);
 routs.delete("/messages/:id", onlineChanger, MessagesController.deleteMessage);
-routs.post("/messages/last", onlineChanger, MessagesController.findLastMessage);
-routs.post("/messages/unreadedCount", onlineChanger, MessagesController.getUnreadMessages);
 routs.post(
   "/messages/unreadedWithData",
   onlineChanger,

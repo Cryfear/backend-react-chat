@@ -62,47 +62,6 @@ const MessagesController = {
     }
   },
 
-  findLastMessage: async (req: Request<{}, {}, { id: string }>, res: Response<{ text: string; date: Date } | { error: string }>) => {
-    if (req.body.id) {
-      try {
-        const messages = await MessageSchema.find({ dialog: req.body.id }).sort("-date").limit(1).lean().exec();
-
-        const lastMessage = messages[0];
-
-        if (messages.length === 0 || !lastMessage) {
-          return res.status(404).send({ error: "No messages found" });
-        }
-
-        res.send({ text: lastMessage.data, date: lastMessage.date });
-      } catch (error) {
-        res.status(404).send({ error: "Failed to find last message" });
-      }
-    } else {
-      res.status(400).send({ error: "Dialog ID is required" });
-    }
-  },
-
-  getUnreadMessages: async (
-    req: Request<{}, {}, { dialogId: string; userId: string }>,
-    res: Response<{ length: number } | { error: string }>
-  ) => {
-    if (req.body.dialogId && req.body.userId) {
-      try {
-        const messages = await MessageSchema.find({
-          dialog: req.body.dialogId,
-          creater: req.body.userId,
-          isReaded: false,
-        }).limit(100);
-
-        res.status(200).send({ length: messages.length });
-      } catch (error) {
-        res.status(404).send({ error: "Failed to get unread messages" });
-      }
-    } else {
-      res.status(400).send({ error: "Dialog ID and User ID are required" });
-    }
-  },
-
   getUnreadMessagesWithData: async (
     req: Request<{}, {}, { dialogId: string; userId: string; unreadedPage: number }>,
     res: Response<IMessage[] | { error: string }>
