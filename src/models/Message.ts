@@ -22,7 +22,7 @@ const MessageSchema = new Schema(
       ref: "User",
     },
     enum: ["text", "audio", "photo"],
-    data: { type: String, required: true }, // текст сообщения, его содержимое
+    data: { type: String, required: true },
     date: { type: Date, default: new Date() },
     isReaded: {
       type: Boolean,

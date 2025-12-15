@@ -2,6 +2,7 @@ import type { Response, Request } from "express";
 import Dialog, { type IDialog } from "../models/Dialog.ts";
 import User from "../models/User.ts";
 import MessageSchema from "../models/Message.ts";
+import mongoose from "mongoose";
 
 let DialogsController = {
   findDialog: async (req: Request<{ id: string; id2: string }>, res: Response<IDialog | { error: string }>) => {
@@ -22,54 +23,85 @@ let DialogsController = {
     }
   },
 
-  findMyDialogs: async (req: Request<{ id: string }>, res: Response<IDialog[] | { error: string }>) => {
+  findMyDialogs: async (req: Request<{ id: string }>, res: Response) => {
     try {
-      const userId = req.params.id;
+      const userId = new mongoose.Types.ObjectId(req.params.id);
       const page = Number(req.body.page) || 0;
       const pageSize = 10;
 
-      if (!userId || userId === "null") {
-        return res.status(400).send({ error: "User ID is required" });
-      }
-
-      const dialogs = await Dialog.find({
-        users: { $in: [userId] },
+      const dialogs: any = await Dialog.find({
+        users: userId,
       })
         .skip(page * pageSize)
         .limit(pageSize)
         .lean();
 
+      if (!dialogs) return res.status(404).send({ error: "dialogs not found" });
+
       const dialogIds = dialogs.map((d) => d._id);
 
       const lastMessages = await MessageSchema.aggregate([
-        { $match: { dialog: { $in: dialogIds } } },
+        {
+          $match: {
+            dialog: { $in: dialogIds },
+          },
+        },
         { $sort: { date: -1 } },
         {
           $group: {
             _id: "$dialog",
             lastMessage: { $first: "$$ROOT" },
             unreadCount: {
-              $sum: { $cond: [{ $eq: ["$isReaded", false] }, 1, 0] },
+              $sum: {
+                $cond: [
+                  {
+                    $and: [{ $eq: ["$isReaded", false] }, { $ne: ["$creater", userId] }],
+                  },
+                  1,
+                  0,
+                ],
+              },
             },
           },
         },
       ]);
 
-      const lastMessagesMap = lastMessages.reduce((acc, item) => {
-        acc[item._id.toString()] = {
-          lastMessage: item.lastMessage,
-          unreadCount: item.unreadCount,
+      const lastMessagesMap = Object.fromEntries(
+        lastMessages.map((item) => [
+          item._id.toString(),
+          {
+            lastMessage: item.lastMessage,
+            unreadCount: item.unreadCount,
+          },
+        ])
+      );
+
+      const companionIds = dialogs.map((d) => d.users.find((u: any) => !u.equals(userId)));
+
+      const companions = await User.find(
+        { _id: { $in: companionIds } },
+        {
+          password: 0,
+          email: 0,
+          confirmed: 0,
+        }
+      ).lean();
+
+      const companionsMap = Object.fromEntries(companions.map((user) => [user._id.toString(), user]));
+
+      const result = dialogs.map((dialog) => {
+        const companionId = dialog.users.find((u: any) => !u.equals(userId)).toString();
+
+        return {
+          ...dialog,
+          user: companionsMap[companionId],
+          lastMessage: lastMessagesMap[dialog._id.toString()]?.lastMessage.data ?? null,
+          lastMessageDate: lastMessagesMap[dialog._id.toString()]?.lastMessage.date ?? null,
+          unreadCount: lastMessagesMap[dialog._id.toString()]?.unreadCount.data ?? 0,
         };
-        return acc;
-      }, {} as Record<string, { lastMessage: any; unreadCount: number }>);
+      });
 
-      const convertedDialogs: any = dialogs.map((dialog) => ({
-        ...dialog,
-        lastMessage: lastMessagesMap[dialog._id.toString()]?.lastMessage || null,
-        unreadCount: lastMessagesMap[dialog._id.toString()]?.unreadCount || 0,
-      }));
-
-      res.send(convertedDialogs);
+      res.send(result);
     } catch (error) {
       console.error(error);
       res.status(500).send({ error: "Server error" });
@@ -109,7 +141,6 @@ let DialogsController = {
   },
 
   deleteDialog: async (req: Request, res: Response) => {
-    // not realised function! wait update
     try {
       await Dialog.deleteOne({ _id: req.params.id }).then((data) => res.send(data));
     } catch (err) {
