@@ -14,12 +14,12 @@ let DialogsController = {
         users: { $all: [id, id2] },
       }).lean();
 
-      if (!dialog) return res.status(404).send({ error: "Dialog does not exist" });
+      if (!dialog) return res.status(200).send({ error: "Dialog does not exist" });
 
       res.send(dialog);
     } catch (err) {
       console.error(err);
-      res.status(200).send({ error: "Server error" });
+      res.status(400).send({ error: "Server error" });
     }
   },
 
@@ -144,7 +144,7 @@ let DialogsController = {
     try {
       await Dialog.deleteOne({ _id: req.params.id }).then((data) => res.send(data));
     } catch (err) {
-      console.log("deleted wasnt successful.");
+      
     }
   },
 };

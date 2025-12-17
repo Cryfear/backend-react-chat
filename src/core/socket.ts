@@ -10,7 +10,7 @@ export const socketInitialization = () => {
       
   });
     
-    socket.on("qqq", ({ content, to }) => {
+    socket.on("socketMessage", ({ content, to }) => {
       users[to] ? users[to].emit("private", {content, to}): null;
     });
 

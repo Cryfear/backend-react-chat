@@ -5,7 +5,6 @@ import Profile from "../models/Profile.ts";
 
 const PostsController = {
   createPost: async (req: Request, res: Response) => {
-    console.log(req.body)
     try {
       const { id, content, creater } = req.body;
 
