@@ -60,6 +60,15 @@ app.use(
   })
 );
 
+app.use(
+  "/uploads",
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET"],
+  }),
+  express.static(path.join(process.cwd(), "uploads"))
+);
+
 // parsing
 
 app.use(express.static("public"));

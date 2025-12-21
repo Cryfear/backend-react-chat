@@ -97,7 +97,7 @@ let DialogsController = {
           user: companionsMap[companionId],
           lastMessage: lastMessagesMap[dialog._id.toString()]?.lastMessage.data ?? null,
           lastMessageDate: lastMessagesMap[dialog._id.toString()]?.lastMessage.date ?? null,
-          unreadCount: lastMessagesMap[dialog._id.toString()]?.unreadCount.data ?? 0,
+          unreadCount: lastMessagesMap[dialog._id.toString()]?.unreadCount ?? 0,
         };
       });
 
