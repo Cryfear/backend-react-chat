@@ -1,16 +1,53 @@
 import type { Response, Request } from "express";
-import Dialog, { type IDialog } from "../models/Dialog.ts";
+import Dialog from "../models/Dialog.ts";
 import User from "../models/User.ts";
 import MessageSchema from "../models/Message.ts";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
-let DialogsController = {
-  findDialog: async (req: Request<{ id: string; id2: string }>, res: Response<IDialog | { error: string }>) => {
+type FindDialogParams = {
+  id: string;
+  id2: string;
+};
+
+type ErrorResponse = { error: string };
+
+type CreateDialogBody = {
+  id_1: string;
+  id_2: string;
+  name?: string;
+};
+
+type UpdateDialogBody = {
+  avatar?: string;
+  fullName?: string;
+};
+
+type LastMessageAgg = {
+  _id: mongoose.Types.ObjectId;
+  lastMessage: {
+    data: string;
+    date: Date;
+  };
+  unreadCount: number;
+};
+
+export type LeanDialog = {
+  _id: Types.ObjectId;
+  users: Types.ObjectId[];
+  isTyping: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type CreateDialogResponse = { id: string } | { error: string };
+
+const DialogsController = {
+  findDialog: async (req: Request<FindDialogParams>, res: Response<LeanDialog | ErrorResponse>) => {
     try {
       const { id, id2 } = req.params;
       if (!id || !id2) return res.status(400).send({ error: "Missing IDs" });
 
-      const dialog: any = await Dialog.findOne({
+      const dialog = await Dialog.findOne({
         users: { $all: [id, id2] },
       }).lean();
 
@@ -23,24 +60,24 @@ let DialogsController = {
     }
   },
 
-  findMyDialogs: async (req: Request<{ id: string }>, res: Response) => {
+  findMyDialogs: async (req: Request<{ id: string }, { page?: number }>, res: Response) => {
     try {
       const userId = new mongoose.Types.ObjectId(req.params.id);
       const page = Number(req.body.page) || 0;
       const pageSize = 10;
 
-      const dialogs: any = await Dialog.find({
+      const dialogs = await Dialog.find({
         users: userId,
       })
         .skip(page * pageSize)
         .limit(pageSize)
-        .lean();
+        .lean<LeanDialog[]>();
 
       if (!dialogs) return res.status(404).send({ error: "dialogs not found" });
 
       const dialogIds = dialogs.map((d) => d._id);
 
-      const lastMessages = await MessageSchema.aggregate([
+      const lastMessages = await MessageSchema.aggregate<LastMessageAgg>([
         {
           $match: {
             dialog: { $in: dialogIds },
@@ -76,7 +113,7 @@ let DialogsController = {
         ])
       );
 
-      const companionIds = dialogs.map((d) => d.users.find((u: any) => !u.equals(userId)));
+      const companionIds = dialogs.map((d) => d.users.find((u) => !u.equals(userId)));
 
       const companions = await User.find(
         { _id: { $in: companionIds } },
@@ -90,14 +127,21 @@ let DialogsController = {
       const companionsMap = Object.fromEntries(companions.map((user) => [user._id.toString(), user]));
 
       const result = dialogs.map((dialog) => {
-        const companionId = dialog.users.find((u: any) => !u.equals(userId)).toString();
+        const companion = dialog.users.find((u) => !u.equals(userId));
+
+        if (!companion) {
+          throw new Error("Companion not found");
+        }
+
+        const companionId = companion.toString();
+        const last = lastMessagesMap[dialog._id.toString()];
 
         return {
           ...dialog,
-          user: companionsMap[companionId],
-          lastMessage: lastMessagesMap[dialog._id.toString()]?.lastMessage.data ?? null,
-          lastMessageDate: lastMessagesMap[dialog._id.toString()]?.lastMessage.date ?? null,
-          unreadCount: lastMessagesMap[dialog._id.toString()]?.unreadCount ?? 0,
+          user: companionsMap[companionId] ?? null,
+          lastMessage: last?.lastMessage?.data ?? null,
+          lastMessageDate: last?.lastMessage?.date ?? null,
+          unreadCount: last?.unreadCount ?? 0,
         };
       });
 
@@ -108,8 +152,12 @@ let DialogsController = {
     }
   },
 
-  createDialog: async (req: Request<{ id_1: string; id_2: string }>, res: Response) => {
-    if (req.body.id_1 === req.body.id_2) res.send({ error: "you cant create a dialig with yourself" });
+  createDialog: async (req: Request<{}, CreateDialogBody>, res: Response<CreateDialogResponse>) => {
+    if (req.body.id_1 === req.body.id_2) {
+      return res.status(400).send({
+        error: "you cant create a dialog with yourself",
+      });
+    }
 
     if (req.body) {
       let user = await User.findOne({ _id: req.body.id_1 });
@@ -119,20 +167,20 @@ let DialogsController = {
         let dio = await Dialog.findOne({ users: { $all: [user, user2] } });
         if (!dio) {
           const newDialog = new Dialog({
-            name: req.body.name,
             users: [user._id, user2._id],
           });
+
           await newDialog.save();
-          await newDialog.populate("users");
-          res.send(newDialog._id);
+
+          res.send({ id: newDialog._id.toString() });
         } else {
-          res.send(dio._id);
+          res.send({ id: dio._id.toString() });
         }
       }
     }
   },
 
-  updateDialog: async (req: Request<{ avatar: string; fullName: string; id: string }>) => {
+  updateDialog: async (req: Request<{ id: string }, UpdateDialogBody>, res: Response) => {
     const updateDialog = {
       avatar: req.body.avatar,
       fullName: req.body.fullName,
@@ -140,12 +188,10 @@ let DialogsController = {
     Dialog.findOneAndUpdate({ _id: req.params.id }, updateDialog, { new: true });
   },
 
-  deleteDialog: async (req: Request, res: Response) => {
+  deleteDialog: async (req: Request<{ id: string }>, res: Response) => {
     try {
       await Dialog.deleteOne({ _id: req.params.id }).then((data) => res.send(data));
-    } catch (err) {
-      
-    }
+    } catch (err) {}
   },
 };
 

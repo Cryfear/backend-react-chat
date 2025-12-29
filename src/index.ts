@@ -9,17 +9,8 @@ import authRouter from "./routes/auth.ts";
 import dialogsRouter from "./routes/dialogs.ts";
 import messagesRouter from "./routes/messages.ts";
 import usersRouter from "./routes/users.ts";
-import profilesRouter from "./routes/profiles.ts";
 import { socketInitialization } from "./core/socket.ts";
 import fileUpload from "express-fileupload";
-
-declare module "express-session" {
-  interface SessionData {
-    userId: string | null;
-    email: string;
-    authToken: string;
-  }
-}
 
 const require = createRequire(import.meta.url);
 const cors = require("cors");
@@ -82,7 +73,6 @@ app.use("/", authRouter);
 app.use("/", dialogsRouter);
 app.use("/", messagesRouter);
 app.use("/", usersRouter);
-app.use("/", profilesRouter);
 
 // connecting
 

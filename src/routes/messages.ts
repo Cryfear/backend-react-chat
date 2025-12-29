@@ -1,6 +1,6 @@
 import router from "express";
 import MessagesController from "../controllers/MessagesController.ts";
-import onlineChanger from "../utils/onlineChanger.ts";
+import { onlineChanger } from "../utils/onlineChanger.ts";
 
 const routs = router.Router();
 
@@ -10,10 +10,6 @@ routs.post("/messages/create", onlineChanger, MessagesController.createMessage);
 routs.post("/messages/createAudio", onlineChanger, MessagesController.createAudioMessage);
 routs.put("/messages/:id", onlineChanger, MessagesController.updateMessage);
 routs.delete("/messages/:id", onlineChanger, MessagesController.deleteMessage);
-routs.post(
-  "/messages/unreadedWithData",
-  onlineChanger,
-  MessagesController.getUnreadMessagesWithData
-);
+routs.post("/messages/unreadedWithData", onlineChanger, MessagesController.getUnreadMessagesWithData);
 
 export default routs;

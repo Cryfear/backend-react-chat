@@ -5,11 +5,9 @@ import bcrypt from "bcrypt";
 import { fileURLToPath } from "url";
 import { dirname, extname, join } from "path";
 import { v4 as uuidv4 } from "uuid";
-import type { FileArray, UploadedFile } from "express-fileupload";
+import type { UploadedFile } from "express-fileupload";
 import { generateToken } from "../utils/jwtSign.ts";
 import type { DeleteResult } from "mongodb";
-import Profile from "../models/Profile.ts";
-import mongoose from "mongoose";
 
 interface UserResponse {
   fullName: string;
@@ -136,15 +134,8 @@ const UsersController = {
   },
 
   uploadAvatar: async (
-    req: Request<{ files: FileArray }>,
-    res: Response<
-      | {
-          file: string;
-          path: string;
-          responseCode: string;
-        }
-      | { error: string; msg?: string }
-    >
+    req: Request,
+    res: Response<{ file: string; path: string; responseCode: string } | { error: string; msg?: string }>
   ) => {
     try {
       if (!req.files || !req.files.file) {
@@ -312,11 +303,6 @@ const UsersController = {
         password: hash,
       });
       const savedUser = await user.save();
-
-      const profile = new Profile({
-        owner: savedUser._id,
-      });
-      await profile.save();
 
       res.send({
         ...savedUser.toObject(),
