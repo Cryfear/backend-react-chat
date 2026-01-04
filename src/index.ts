@@ -2,20 +2,20 @@ import express from "express";
 import * as dotenv from "dotenv";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import { createRequire } from "module";
 import mongoose from "mongoose";
 import path from "path";
-import authRouter from "./routes/auth.ts";
-import dialogsRouter from "./routes/dialogs.ts";
-import messagesRouter from "./routes/messages.ts";
-import usersRouter from "./routes/users.ts";
-import { socketInitialization } from "./core/socket.ts";
+import authRouter from "./routes/auth.js";
+import dialogsRouter from "./routes/dialogs.js";
+import messagesRouter from "./routes/messages.js";
+import usersRouter from "./routes/users.js";
 import fileUpload from "express-fileupload";
+import cors from "cors";
+import http from "http";
+import { setSocket } from "./core/socket.service.js";
+import { Server } from "socket.io";
 
-const require = createRequire(import.meta.url);
-const cors = require("cors");
 const app = express();
-const server = require("http").createServer(app);
+const server = http.createServer(app);
 
 dotenv.config();
 
@@ -82,17 +82,14 @@ app.get("/", (req, res) => {
 
 // socket
 
-export const io = require("socket.io")(server, {
+const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    transports: ["websocket", "polling"],
     credentials: true,
   },
-  allowEIO3: true,
 });
 
-socketInitialization();
+setSocket(io);
 
 async function startServer() {
   try {

@@ -3,7 +3,8 @@ import { IUser } from "../models/User";
 declare global {
   namespace Express {
     interface Request {
-      user?: IUser;
+      user?: import("../models/User").IUser;
+      files?: import("express-fileupload").FileArray;
     }
   }
 }
@@ -23,3 +24,5 @@ declare module "express-session" {
     authToken: string;
   }
 }
+
+export {};

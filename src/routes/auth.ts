@@ -1,12 +1,12 @@
-import router from "express";
-import UsersController from "../controllers/UsersController.ts";
-import { onlineChanger } from "../utils/onlineChanger.ts";
-import { verifyToken } from "../utils/verifyToken.ts";
+import UsersController from "../controllers/UsersController.js";
+import { onlineChanger } from "../utils/onlineChanger.js";
+import { verifyToken } from "../utils/verifyToken.js";
+import { Router } from "express";
 
-const routs = router.Router();
+const routes = Router();
 
-routs.post("/login", UsersController.loginUser);
-routs.post("/login/me", onlineChanger, verifyToken, UsersController.getMe);
-routs.delete("/logout", onlineChanger, UsersController.logoutUser);
+routes.post("/login", UsersController.loginUser);
+routes.post("/login/me", onlineChanger, verifyToken, UsersController.getMe);
+routes.delete("/logout", onlineChanger, UsersController.logoutUser);
 
-export default routs;
+export default routes;

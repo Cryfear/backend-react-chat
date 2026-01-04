@@ -1,7 +1,7 @@
 import type { Response, Request } from "express";
-import Dialog from "../models/Dialog.ts";
-import User from "../models/User.ts";
-import MessageSchema from "../models/Message.ts";
+import Dialog from "../models/Dialog.js";
+import User from "../models/User.js";
+import MessageSchema from "../models/Message.js";
 import mongoose, { Types } from "mongoose";
 
 type FindDialogParams = {

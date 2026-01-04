@@ -1,15 +1,15 @@
-import router from "express";
-import MessagesController from "../controllers/MessagesController.ts";
-import { onlineChanger } from "../utils/onlineChanger.ts";
+import MessagesController from "../controllers/MessagesController.js";
+import { onlineChanger } from "../utils/onlineChanger.js";
+import { Router } from "express";
 
-const routs = router.Router();
+const routes = Router();
 
-routs.get("/messages/:id", onlineChanger, MessagesController.findMessage);
-routs.post("/messages/all", onlineChanger, MessagesController.findDialogMessages);
-routs.post("/messages/create", onlineChanger, MessagesController.createMessage);
-routs.post("/messages/createAudio", onlineChanger, MessagesController.createAudioMessage);
-routs.put("/messages/:id", onlineChanger, MessagesController.updateMessage);
-routs.delete("/messages/:id", onlineChanger, MessagesController.deleteMessage);
-routs.post("/messages/unreadedWithData", onlineChanger, MessagesController.getUnreadMessagesWithData);
+routes.get("/messages/:id", onlineChanger, MessagesController.findMessage);
+routes.post("/messages/all", onlineChanger, MessagesController.findDialogMessages);
+routes.post("/messages/create", onlineChanger, MessagesController.createMessage);
+routes.post("/messages/createAudio", onlineChanger, MessagesController.createAudioMessage);
+routes.put("/messages/:id", onlineChanger, MessagesController.updateMessage);
+routes.delete("/messages/:id", onlineChanger, MessagesController.deleteMessage);
+routes.post("/messages/unreadedWithData", onlineChanger, MessagesController.getUnreadMessagesWithData);
 
-export default routs;
+export default routes;

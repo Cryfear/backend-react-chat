@@ -1,20 +1,9 @@
-import { io } from "../index.ts";
+import { getSocket } from "./socket.service.js";
 
-export const socketInitialization = () => {
-  let users = {};
+export function initSocket() {
+  const io = getSocket();
+
   io.on("connection", (socket) => {
-    if(socket.id !== 'null') users[socket.id] = socket;
-
-    socket.on('send-id', function(id) {
-      if(id !== 'null') users[id] = socket;
-      
+    console.log("Socket connected:", socket.id);
   });
-    
-    socket.on("socketMessage", ({ content, to }) => {
-      users[to] ? users[to].emit("private", {content, to}): null;
-    });
-
-    socket.on('disconnect', () => {
-    })
-  });
-};
+}

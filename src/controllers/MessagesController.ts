@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
-import { io } from "../index.ts";
-import MessageSchema, { type IMessage } from "../models/Message.ts";
-import Dialog from "../models/Dialog.ts";
-import User from "../models/User.ts";
+import MessageSchema, { type IMessage } from "../models/Message.js";
+import Dialog from "../models/Dialog.js";
+import User from "../models/User.js";
 import type { Types } from "mongoose";
 import type { UploadedFile } from "express-fileupload";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { getSocket } from "src/core/socket.service.js";
 
 interface UpdateMessageRequest {
   body: {
@@ -128,6 +128,8 @@ const MessagesController = {
 
       const lastMessageForSocket = await MessageSchema.findById(savedMessage._id);
 
+      const io = getSocket();
+
       io.emit("new_message", lastMessageForSocket);
 
       res.send(lastMessageForSocket as IMessage);
@@ -220,6 +222,8 @@ const MessagesController = {
       const saved = await newMessage.save();
 
       const lastMessageForSocket = await MessageSchema.findById(saved._id);
+
+      const io = getSocket();
 
       io.emit("new_message", lastMessageForSocket);
 

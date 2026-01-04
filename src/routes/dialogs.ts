@@ -1,13 +1,13 @@
-import router from "express";
-import DialogsController from "../controllers/DialogsController.ts";
-import { onlineChanger } from "../utils/onlineChanger.ts";
+import DialogsController from "../controllers/DialogsController.js";
+import { onlineChanger } from "../utils/onlineChanger.js";
+import { Router } from "express";
 
-const routs = router.Router();
+const routes = Router();
 
-routs.get("/dialogs/:id&:id2", onlineChanger, DialogsController.findDialog);
-routs.post("/dialogs/my/:id", onlineChanger, DialogsController.findMyDialogs);
-routs.post("/dialogs/create", onlineChanger, DialogsController.createDialog);
-routs.put("/dialogs/:id", onlineChanger, DialogsController.updateDialog);
-routs.delete("/dialogs/:id", onlineChanger, DialogsController.deleteDialog);
+routes.get("/dialogs/:id&:id2", onlineChanger, DialogsController.findDialog);
+routes.post("/dialogs/my/:id", onlineChanger, DialogsController.findMyDialogs);
+routes.post("/dialogs/create", onlineChanger, DialogsController.createDialog);
+routes.put("/dialogs/:id", onlineChanger, DialogsController.updateDialog);
+routes.delete("/dialogs/:id", onlineChanger, DialogsController.deleteDialog);
 
-export default routs;
+export default routes;

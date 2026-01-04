@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express-serve-static-core";
-import User from "../models/User.ts";
+import User from "../models/User.js";
 
 export const onlineChanger: RequestHandler = async (req, res, next) => {
   const userId = req.headers["id"];

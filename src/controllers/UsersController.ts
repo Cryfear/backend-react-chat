@@ -1,12 +1,12 @@
 import type { IUser } from "./../models/User.ts";
 import type { Request, Response } from "express";
-import UserSchema from "../models/User.ts";
+import UserSchema from "../models/User.js";
 import bcrypt from "bcrypt";
 import { fileURLToPath } from "url";
 import { dirname, extname, join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import type { UploadedFile } from "express-fileupload";
-import { generateToken } from "../utils/jwtSign.ts";
+import { generateToken } from "../utils/jwtSign.js";
 import type { DeleteResult } from "mongodb";
 
 interface UserResponse {
