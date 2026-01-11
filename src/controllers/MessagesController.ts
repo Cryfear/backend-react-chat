@@ -7,7 +7,6 @@ import type { UploadedFile } from "express-fileupload";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { getSocket } from "src/core/socket.service.js";
 
 interface UpdateMessageRequest {
   body: {
@@ -128,16 +127,6 @@ const MessagesController = {
 
       const lastMessageForSocket = await MessageSchema.findById(savedMessage._id);
 
-      const io = getSocket();
-
-      io.to(`dialog:${dialog._id.toString()}`).emit("message:new", {
-        _id: savedMessage._id,
-        dialogId: dialog._id.toString(),
-        creater: me._id.toString(),
-        data: savedMessage.data,
-        createdAt: savedMessage.createdAt,
-      });
-
       res.send(lastMessageForSocket as IMessage);
     } catch (error) {
       res.status(500).send({ error: "Failed to create message" });
@@ -228,10 +217,6 @@ const MessagesController = {
       const saved = await newMessage.save();
 
       const lastMessageForSocket = await MessageSchema.findById(saved._id);
-
-      const io = getSocket();
-
-      io.emit("new_message", lastMessageForSocket);
 
       res.send(lastMessageForSocket as IMessage);
     } catch (error) {

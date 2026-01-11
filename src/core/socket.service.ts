@@ -31,6 +31,13 @@ export const setSocket = (serverIO: Server) => {
       socket.leave(`dialog:${dialogId}`);
     });
 
+    socket.on("message:new", ({ message, dialogId }) => {
+      console.log('here')
+      socket.to(`dialog:${dialogId.toString()}`).emit("message:new", {
+        ...message
+      });
+    });
+
     registerTypingHandlers(io, socket);
   });
 };
