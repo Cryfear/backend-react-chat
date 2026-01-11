@@ -130,7 +130,13 @@ const MessagesController = {
 
       const io = getSocket();
 
-      io.emit("new_message", lastMessageForSocket);
+      io.to(`dialog:${dialog._id.toString()}`).emit("message:new", {
+        _id: savedMessage._id,
+        dialogId: dialog._id.toString(),
+        creater: me._id.toString(),
+        data: savedMessage.data,
+        createdAt: savedMessage.createdAt,
+      });
 
       res.send(lastMessageForSocket as IMessage);
     } catch (error) {

@@ -7,7 +7,7 @@
   "author": "Cryfear <vasil.arturok@yandex.ru>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --exec tsx src/index.ts"
+    "watch": "nodemon --exec tsx src/index.ts"
   },
   "devDependencies": {
     "eslint": "^9.34.0",
