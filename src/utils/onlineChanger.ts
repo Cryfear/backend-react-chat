@@ -19,7 +19,7 @@ export const onlineChanger: RequestHandler = async (req, res, next) => {
     user.last_seen = new Date();
     await user.save();
 
-    req.user = user; // ✅ теперь типизировано
+    req.user = user;
 
     setTimeout(async () => {
       try {

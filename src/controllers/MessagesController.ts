@@ -7,6 +7,7 @@ import type { UploadedFile } from "express-fileupload";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { getSocket } from "src/core/socket.service.js";
 
 interface UpdateMessageRequest {
   body: {
@@ -32,7 +33,7 @@ interface MessageResponse {
 const MessagesController = {
   findDialogMessages: async (
     req: Request<{}, {}, { dialogId: string; page?: string }>,
-    res: Response<MessageResponse[] | { error: string }>
+    res: Response<MessageResponse[] | { error: string }>,
   ) => {
     try {
       const page = Number(req.body.page) || 0;
@@ -63,7 +64,7 @@ const MessagesController = {
 
   getUnreadMessagesWithData: async (
     req: Request<{}, {}, { dialogId: string; userId: string; unreadedPage: number }>,
-    res: Response<IMessage[] | { error: string }>
+    res: Response<IMessage[] | { error: string }>,
   ) => {
     if (req.body.dialogId && req.body.userId) {
       try {
@@ -88,7 +89,7 @@ const MessagesController = {
 
   createMessage: async (
     req: Request<{}, {}, { dialogId: string; userId: string; myId: string; data: string }>,
-    res: Response<IMessage | { error: string }>
+    res: Response<IMessage | { error: string }>,
   ) => {
     try {
       const dialog = await Dialog.findOne({ _id: req.body.dialogId });
@@ -122,8 +123,12 @@ const MessagesController = {
         },
         {
           $set: { isReaded: true },
-        }
+        },
       );
+
+      await Dialog.findByIdAndUpdate(req.body.dialogId, {
+        lastMessageDate: new Date(),
+      });
 
       const lastMessageForSocket = await MessageSchema.findById(savedMessage._id);
 
@@ -135,15 +140,14 @@ const MessagesController = {
 
   updateMessage: async (
     req: Request<UpdateMessageRequest["params"], {}, UpdateMessageRequest["body"]>,
-    res: Response<IMessage | { error: string }>
+    res: Response<IMessage | { error: string }>,
   ) => {
-    // after some refactoring i'm not sure that this is works, test it later.
     try {
       if (req.body.avatar && req.body.fullName) {
         const message = await MessageSchema.findOneAndUpdate(
           { _id: req.params.id },
           { avatar: req.body.avatar, fullName: req.body.fullName },
-          { new: true }
+          { new: true },
         );
 
         if (!message) {
@@ -173,7 +177,7 @@ const MessagesController = {
 
   createAudioMessage: async (
     req: Request<{}, {}, { dialogId: string; userId: string; myId: string; data: string }>,
-    res: Response<IMessage | { error: string }>
+    res: Response<IMessage | { error: string }>,
   ) => {
     try {
       const { dialogId, myId } = req.body;
@@ -184,7 +188,6 @@ const MessagesController = {
 
       const audio = req.files.audio as UploadedFile;
 
-      // Проверяем тип
       if (!audio.mimetype.startsWith("audio/")) {
         return res.status(400).send({ error: "Wrong file type" });
       }
@@ -216,12 +219,46 @@ const MessagesController = {
 
       const saved = await newMessage.save();
 
+      await Dialog.findByIdAndUpdate(dialogId, {
+        lastMessageDate: new Date(),
+      });
+
       const lastMessageForSocket = await MessageSchema.findById(saved._id);
 
       res.send(lastMessageForSocket as IMessage);
     } catch (error) {
       console.error(error);
       res.status(500).send({ error: "Failed to create audio message" });
+    }
+  },
+
+  readDialogMessages: async (req: Request, res: Response) => {
+    try {
+      const dialogId = req.params.id;
+      const userId = req.headers.userid;
+
+      await MessageSchema.updateMany(
+        {
+          dialog: dialogId,
+          creater: userId,
+          isReaded: false,
+        },
+        {
+          $set: { isReaded: true },
+        },
+      );
+
+      const io = getSocket();
+
+      io.to(`dialog:${dialogId}`).emit("messages:read", {
+        dialogId,
+        readerId: userId,
+      });
+
+      res.send({ success: true });
+    } catch (e) {
+      console.error(e);
+      res.status(500).send({ error: "Server error" });
     }
   },
 };

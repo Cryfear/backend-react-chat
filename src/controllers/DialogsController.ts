@@ -34,7 +34,7 @@ type LastMessageAgg = {
 export type LeanDialog = {
   _id: Types.ObjectId;
   users: Types.ObjectId[];
-  isTyping: boolean;
+  lastMessageDate: Date;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -69,6 +69,7 @@ const DialogsController = {
       const dialogs = await Dialog.find({
         users: userId,
       })
+        .sort({ lastMessageDate: -1 })
         .skip(page * pageSize)
         .limit(pageSize)
         .lean<LeanDialog[]>();
@@ -110,7 +111,7 @@ const DialogsController = {
             lastMessage: item.lastMessage,
             unreadCount: item.unreadCount,
           },
-        ])
+        ]),
       );
 
       const companionIds = dialogs.map((d) => d.users.find((u) => !u.equals(userId)));
@@ -121,7 +122,7 @@ const DialogsController = {
           password: 0,
           email: 0,
           confirmed: 0,
-        }
+        },
       ).lean();
 
       const companionsMap = Object.fromEntries(companions.map((user) => [user._id.toString(), user]));

@@ -11,5 +11,6 @@ routes.post("/messages/createAudio", onlineChanger, MessagesController.createAud
 routes.put("/messages/:id", onlineChanger, MessagesController.updateMessage);
 routes.delete("/messages/:id", onlineChanger, MessagesController.deleteMessage);
 routes.post("/messages/unreadedWithData", onlineChanger, MessagesController.getUnreadMessagesWithData);
+routes.get("/messages/read/:id", onlineChanger, MessagesController.readDialogMessages)
 
 export default routes;

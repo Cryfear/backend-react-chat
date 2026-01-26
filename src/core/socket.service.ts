@@ -16,23 +16,19 @@ export const setSocket = (serverIO: Server) => {
 
   io.on("connection", (socket: Socket) => {
     socket.on("auth", (userId: string) => {
-      console.log("user auth succesful: ", userId);
       socket.data.userId = userId;
       socket.join(`user:${userId}`);
     });
 
     socket.on("dialog:join", (dialogId: string) => {
-      console.log("user joined dialog: ", dialogId);
       socket.join(`dialog:${dialogId}`);
     });
 
     socket.on("dialog:leave", (dialogId: string) => {
-      console.log("user leaved dialog: ", dialogId);
       socket.leave(`dialog:${dialogId}`);
     });
 
     socket.on("message:new", ({ message, dialogId }) => {
-      console.log('here')
       socket.to(`dialog:${dialogId.toString()}`).emit("message:new", {
         ...message
       });
